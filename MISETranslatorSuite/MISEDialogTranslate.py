@@ -4,6 +4,7 @@
 # Created by Praetorian (ShadowNate) for Classic Adventures in Greek
 # classic.adventures.in.greek@gmail.com
 #
+from __future__ import print_function
 import os, sys, shutil
 import array
 from struct import *
@@ -24,10 +25,10 @@ import msgBoxesStub
 
 
 import sys
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtGui import QCloseEvent
+from Qt import QtCore, QtGui, QtCompat
+from Qt.QtCore import *
+from Qt.QtGui import *
+from Qt.QtWidgets import QTableView, QMainWindow, QApplication, QButtonGroup, QSizePolicy, QMessageBox, QFileDialog
 import grabberFromPNG014    # needed to get the namespace (access global function for adding extra column jsonsettings)
 from grabberFromPNG014 import *  #needed to get the class easier (without the namespace)
 from tableViewCheckBoxDelegate import CheckBoxDelegate
@@ -345,20 +346,20 @@ listOfLabelsSpeechInfoOrig = [] # for MI2
 ###############################
 ###################################
 
-class MISEQuoteTableView(QtGui.QTableView):
+class MISEQuoteTableView(QTableView):
     """
     A QTableView for displaying the quotes and editing the translation
     """
     _autoresize = True
     def __init__(self, parent=None):
-        QtGui.QTableView.__init__(self, parent)
+        QTableView.__init__(self, parent)
 #        self.init_variables()
 #        self.setShowGrid(False)
 #        self.verticalHeader().hide()
 #        self.verticalHeader().setDefaultSectionSize(20)
 #        self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
 #        self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         self.setSizePolicy(sizePolicy)
@@ -379,12 +380,13 @@ class MISEQuoteTableView(QtGui.QTableView):
         self.verticalHeader().setMinimumSectionSize(40)
         self.verticalHeader().setStretchLastSection(False)
 #        connect(self, SIGNAL('doubleClicked (const QModelIndex &)'), self.revisionActivated)
+        #self.doubleClicked.connect(self.revisionActivated)
         self._autoresize = True
 #        connect(self.horizontalHeader(), SIGNAL('sectionResized(int, int, int)'), self.disableAutoResize)
 
     def resizeEvent(self, event):
         # we catch this event to resize smartly tables' columns
-        QtGui.QTableView.resizeEvent(self, event)
+        QTableView.resizeEvent(self, event)
         if self._autoresize:
             self.resizeColumns(event.oldSize(), event.size())
 
@@ -392,10 +394,10 @@ class MISEQuoteTableView(QtGui.QTableView):
         # resize columns handling
         model = self.model()
         if not model:
-            ##print "DEBUG: no resize no model"
+            ##print("DEBUG: no resize no model")
             return
         elif self._autoresize:
-            ##print "DEBUG: resizing columns because table was resized from (%d, %d) to (%d, %d)" % (oldSize.width(), oldSize.height() ,newSize.width(), newSize.height() )
+            ##print("DEBUG: resizing columns because table was resized from (%d, %d) to (%d, %d)" % (oldSize.width(), oldSize.height() ,newSize.width(), newSize.height() ))
             self.emit(SIGNAL("resize(int, int)"), oldSize.width(), newSize.width()) # to be handled in the main class
         return
 #
@@ -404,7 +406,7 @@ class MISEQuoteTableView(QtGui.QTableView):
 # TODO: validate the selected encoding?
 
 #class for handling the GUI
-class MyMainWindow(QtGui.QMainWindow):
+class MyMainWindow(QMainWindow):
     #
     # TODO: need a more centralised access control to the DB
     #
@@ -446,8 +448,8 @@ class MyMainWindow(QtGui.QMainWindow):
     ignoreQuoteTableResizeEventFlg = False
 
     def eventFilter(self, object, event):
-        #print "EVENT TYPE: %s VS %s " % (event.__class__.__name__, QtGui.QCloseEvent.__name__)
-        #print "OBJECT: %s VS %s " % (object.__class__.__name__, self.ui.__class__.__name__)
+        #print("EVENT TYPE: %s VS %s " % (event.__class__.__name__, QtGui.QCloseEvent.__name__))
+        #print("OBJECT: %s VS %s " % (object.__class__.__name__, self.ui.__class__.__name__))
         if self.ui.closingFlag  == False and event.__class__ == QtGui.QCloseEvent:
         ## HANDLE EVENT....
             self.closeEvent(event)
@@ -467,11 +469,11 @@ class MyMainWindow(QtGui.QMainWindow):
             self.basedir = os.path.dirname(__file__)
 
         # removed temporarily because of bad portability
-        #print enchant.list_languages()
+        #print(enchant.list_languages())
 
         fullDictionariesPath = os.path.join(self.relPath,self.dictionariesFolderName)
         if(not os.access(self.dictionariesFolderName, os.F_OK)) :
-            print "Dictionaries folder not found"
+            print("Dictionaries folder not found")
             self.dictionariesFolderFound = False
         else:
             self.dictionariesFolderFound = True
@@ -479,33 +481,33 @@ class MyMainWindow(QtGui.QMainWindow):
             #enchant.set_param("enchant.myspell.dictionary.path",fullDictionariesPath)
 
         # removed temporarily because of bad portability
-        #print enchant.get_param("enchant.myspell.dictionary.path")
-        #print enchant.list_languages()
+        #print(enchant.get_param("enchant.myspell.dictionary.path"))
+        #print(enchant.list_languages())
         # http://stackoverflow.com/questions/8753973/pyqt-qmenu-dropdown-direction
 
         self.DBFileNameAndRelPath = os.path.join(self.relPath,self.DBFileName)
-        #print self.DBFileNameAndRelPath
+        #print(self.DBFileNameAndRelPath)
         #qtWindow init was here...
         ##uiFilePath = os.path.join(self.relPath, self.uiFileName)
         uiFilePath = os.path.join(self.relPath, self.uiFolderName, self.uiFileName)
-        #print uiFilePath
+        #print(uiFilePath)
         if not os.access(uiFilePath, os.F_OK) :
-            print "Could not find the required ui file %s for the application. Quiting..." % (self.uiFileName)
+            print("Could not find the required ui file %s for the application. Quiting..." % (self.uiFileName))
             sys.exit(0)
 
 
         if not os.access(self.DBFileNameAndRelPath, os.F_OK) :
             #check in cleandb subdir too!
             cleanDBRelPath= os.path.join(self.relPath, "cleandb",self.DBFileName)
-            #print cleanDBRelPath
+            #print(cleanDBRelPath)
             # removed attempts to set the (str.decode(encoding) or unicode(.. ,encoding) ) encoding here for cleanDBRelPath since it;s already a unicode object
 
             if os.access(cleanDBRelPath, os.F_OK) :
                 # QMessageBox parented at self. Not yet self.ui instance!
                 reply = msgBoxesStub.qMsgBoxQuestion(self.ui, 'Clean DB copy',
-                    "No existing DB was detected in the same folder with the translator app, but a clean DB was detected in the cleandb subdirectory. Do you want to adopt this as your active DB?", QtGui.QMessageBox.Yes |
-                    QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-                if reply == QtGui.QMessageBox.Yes:
+                    "No existing DB was detected in the same folder with the translator app, but a clean DB was detected in the cleandb subdirectory. Do you want to adopt this as your active DB?", QMessageBox.Yes |
+                    QMessageBox.No, QMessageBox.No)
+                if reply == QMessageBox.Yes:
                     shutil.copyfile(cleanDBRelPath, self.DBFileNameAndRelPath)
                 else:
                 # QMessageBox parented at self. Not yet self.ui instance!
@@ -527,7 +529,7 @@ class MyMainWindow(QtGui.QMainWindow):
         grabberFromPNG014.checkForJSONSettingsColumnAndAddIfNotExists(self.DBFileNameAndRelPath)
         conn = sqlite3.connect(self.DBFileNameAndRelPath)
         c = conn.cursor()
-        ##print "checking for JSON"
+        ##print("checking for JSON")
         c.execute("""select jsonsettings from settings where id = 1""")
         row = c.fetchone()
         conn.commit()
@@ -538,51 +540,51 @@ class MyMainWindow(QtGui.QMainWindow):
         # TODO: check if the desired screen number exists.
         # TODO: get resolution of target screen check if similar. Else, show in the center? (or show always in the center?)
         screen_number = 0 #2 is an example, this is 3th screen, because screens are numbered from 0
-        parentScreen = QtGui.QApplication.desktop().screen(QtGui.QApplication.desktop().primaryScreen()) # QWidget *
+        parentScreen = QApplication.desktop().screen(QApplication.desktop().primaryScreen()) # QWidget *
         # on virtual desktops this always returns 1!!
-        #print "parent screen num", QtGui.QApplication.desktop().screenNumber(parentScreen)
-        is_virtual_desktop = QtGui.QApplication.desktop().isVirtualDesktop()  # bool
+        #print("parent screen num", QApplication.desktop().screenNumber(parentScreen))
+        is_virtual_desktop = QApplication.desktop().isVirtualDesktop()  # bool
         # <scx>
-        #screenCount =  QtGui.QApplication.desktop().screenCount()
+        #screenCount =  QApplication.desktop().screenCount()
         screenCount = 1
-        if hasattr(QtGui.QApplication.desktop(), 'screenCount'):
-            screenCount =  QtGui.QApplication.desktop().screenCount()
-        elif hasattr(QtGui.QApplication.desktop(), 'numScreens'):
-           screenCount =  QtGui.QApplication.desktop().numScreens
+        if hasattr(QApplication.desktop(), 'screenCount'):
+            screenCount =  QApplication.desktop().screenCount()
+        elif hasattr(QApplication.desktop(), 'numScreens'):
+           screenCount =  QApplication.desktop().numScreens
         else:
-            print "error #0"
+            print("error #0")
         # </scx>
-        primaryScreenNum =  QtGui.QApplication.desktop().primaryScreen()
-        top_left = QtGui.QApplication.desktop().screenGeometry(QtGui.QApplication.desktop().primaryScreen()).topLeft() #QPoint
-        bottom_left = QtGui.QApplication.desktop().screenGeometry(QtGui.QApplication.desktop().primaryScreen()).bottomLeft() #QPoint
+        primaryScreenNum =  QApplication.desktop().primaryScreen()
+        top_left = QApplication.desktop().screenGeometry(QApplication.desktop().primaryScreen()).topLeft() #QPoint
+        bottom_left = QApplication.desktop().screenGeometry(QApplication.desktop().primaryScreen()).bottomLeft() #QPoint
 
         #
 
-        if(self.jSettingsInMemDict is not None and self.jSettingsInMemDict.has_key('lastDesktopScreenNumber')):
+        if(self.jSettingsInMemDict is not None and 'lastDesktopScreenNumber' in self.jSettingsInMemDict):
         #
             screen_number = self.jSettingsInMemDict['lastDesktopScreenNumber']
             if(screen_number >= screenCount or screen_number < 0):
                 screen_number = primaryScreenNum
                 screen_number = primaryScreenNum
             if is_virtual_desktop:
-                top_left = QtGui.QApplication.desktop().screenGeometry(screen_number).topLeft()
-                bottom_left = QtGui.QApplication.desktop().screenGeometry(screen_number).bottomLeft()
+                top_left = QApplication.desktop().screenGeometry(screen_number).topLeft()
+                bottom_left = QApplication.desktop().screenGeometry(screen_number).bottomLeft()
             else:
-                parentScreen = QtGui.QApplication.desktop().screen(screen_number)
+                parentScreen = QApplication.desktop().screen(screen_number)
         # Set up the user interface from Designer.
         try:
-            QtGui.QMainWindow.__init__(self, parentScreen)
+            QMainWindow.__init__(self, parentScreen)
         except:
-            parentScreen = QtGui.QApplication.desktop().screen(0x00)
-            QtGui.QMainWindow.__init__(self, parentScreen)
+            parentScreen = QApplication.desktop().screen(0x00)
+            QMainWindow.__init__(self, parentScreen)
 
-        #print "is virtual desktop: ", is_virtual_desktop, screenCount, screen_number
-        self.ui = uic.loadUi(uiFilePath, self)
+        #print("is virtual desktop: ", is_virtual_desktop, screenCount, screen_number)
+        self.ui = QtCompat.loadUi(uiFilePath, self)
 
         if is_virtual_desktop :
             self.ui.move( top_left)
         else:
-            scr = QtGui.QApplication.desktop().screenGeometry(parentScreen)
+            scr = QApplication.desktop().screenGeometry(parentScreen)
             self.ui.move( scr.center() - self.ui.rect().center() )
 
         self.ui.closingFlag = False
@@ -620,16 +622,14 @@ class MyMainWindow(QtGui.QMainWindow):
         self.SearcHReplaceModesRadioGroup.addButton(self.ui.searchModeRB)
         self.SearcHReplaceModesRadioGroup.addButton(self.ui.replaceModeRB)
         self.SearcHReplaceModesRadioGroup.addButton(self.ui.replaceRegExModeRB)
-
-        self.ui.searchModeRB.connect(self.ui.searchModeRB, QtCore.SIGNAL('toggled(bool)'), self.searchModeToggled)
-        self.ui.replaceModeRB.connect(self.ui.replaceModeRB, QtCore.SIGNAL('toggled(bool)'), self.replaceModeToggled)
-        self.ui.replaceRegExModeRB.connect(self.ui.replaceRegExModeRB, QtCore.SIGNAL('toggled(bool)'), self.replaceRegExModeToggled)
-        self.ui.actionShow_Highlighting.connect(self.ui.actionShow_Highlighting, QtCore.SIGNAL('toggled(bool)'), self.showHideDefaultHighlighing)
+        self.ui.searchModeRB.toggled.connect(self.searchModeToggled)
+        self.ui.replaceModeRB.toggled.connect(self.replaceModeToggled)
+        self.ui.replaceRegExModeRB.toggled.connect(self.replaceRegExModeToggled)
+        self.ui.actionShow_Highlighting.toggled.connect(self.showHideDefaultHighlighing)
         self.ui.searchModeRB.toggle()
-
         # HANDLING INIT HIGHLIGHTING (RETRIEVE FROM DB) ###
         # check with retrieved settings to set the highlighting status
-        if(self.jSettingsInMemDict is not None and self.jSettingsInMemDict.has_key('showHighlighting')):
+        if(self.jSettingsInMemDict is not None and 'showHighlighting' in self.jSettingsInMemDict):
             if(self.jSettingsInMemDict['showHighlighting'] == True):
                 self.ui.actionShow_Highlighting.toggle()
         else: #default (enable highlighting)
@@ -640,7 +640,7 @@ class MyMainWindow(QtGui.QMainWindow):
         # #################################################
 
         # todo: Match Case initialise!
-        QtCore.QObject.connect(self.ui.selGameCmBx, QtCore.SIGNAL("currentIndexChanged(const QString)"), self.loadSelectedGameID)
+        #QtCore.QObject.connect(self.ui.selGameCmBx, QtCore.SIGNAL("currentIndexChanged(const QString)"), self.loadSelectedGameID)
         #
         # MenuActions
         #
@@ -754,8 +754,8 @@ class MyMainWindow(QtGui.QMainWindow):
         self.quoteTableView.show()
         tableHeaderViewInst = self.quoteTableView.horizontalHeader();
         tableHeaderViewInst.setStretchLastSection(False)
-        tableHeaderViewInst.connect(tableHeaderViewInst, QtCore.SIGNAL('sectionResized(int , int , int )'),  self.handleColumnsResized)
-        self.quoteTableView.connect(self.quoteTableView, QtCore.SIGNAL('resize(int, int)'),  self.tableViewResizeEvent)
+        #tableHeaderViewInst.connect(tableHeaderViewInst, QtCore.SIGNAL('sectionResized(int , int , int )'),  self.handleColumnsResized)
+        #self.quoteTableView.connect(self.quoteTableView, QtCore.SIGNAL('resize(int, int)'),  self.tableViewResizeEvent)
 
 
 
@@ -771,37 +771,37 @@ class MyMainWindow(QtGui.QMainWindow):
     #           look-up QSettings Class Reference [QtCore module]
     def closeEvent(self, event):
         reply = msgBoxesStub.qMsgBoxQuestion(self.ui, 'Quit application',
-            "Are you sure you want to quit?", QtGui.QMessageBox.Yes |
-            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-        if reply == QtGui.QMessageBox.Yes:
+            "Are you sure you want to quit?", QMessageBox.Yes |
+            QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
             self.ui.closingFlag = True
             event.accept()
-            ##print "Saving Session"
+            ##print("Saving Session")
             # store session settings
             if self.jSettingsInMemDict is not None:
                 try:
-                    self.jSettingsInMemDict['lastDesktopScreenNumber'] = QtGui.QApplication.desktop().screenNumber(self.ui)
+                    self.jSettingsInMemDict['lastDesktopScreenNumber'] = QApplication.desktop().screenNumber(self.ui)
                     self.jSettingsInMemDict['showHighlighting'] = self.ui.actionShow_Highlighting.isChecked()
-                    #print "Detected display", self.jSettingsInMemDict['lastDesktopScreenNumber']
+                    #print("Detected display", self.jSettingsInMemDict['lastDesktopScreenNumber'])
                 except:
-                    #print "Exception in detecing display"
+                    #print("Exception in detecing display")
                     self.jSettingsInMemDict['lastDesktopScreenNumber'] = 0
                     self.jSettingsInMemDict['showHighlighting'] = True
 
             if self.jSettingsInMemDict is not None: # and len(self.jSettingsInMemDict) > 0:
-                ##print "Session has something to save"
+                ##print("Session has something to save")
                 jSettingsDictJSONed = json.dumps(self.jSettingsInMemDict)
                 if not os.access(self.DBFileNameAndRelPath, os.F_OK) :
                     #debug
-                    print "CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath)
+                    print("CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath))
                 else:
                     conn = sqlite3.connect(self.DBFileNameAndRelPath)
                     c = conn.cursor()
-                    ##print "checking for JSON"
+                    ##print("checking for JSON")
                     c.execute("""update settings set jsonsettings=? where id = 1""", (jSettingsDictJSONed,) )
                     conn.commit()
                     c.close()
-            ##print "Session Saved"
+            ##print("Session Saved")
         else:
             event.ignore()
             self.ui.closingFlag = False
@@ -821,7 +821,7 @@ class MyMainWindow(QtGui.QMainWindow):
     def focusOnFindBox(self):
         self.ui.findStrTxtBx.setFocus()
         if(not self.ui.searchModeRB.isChecked()):
-            print "kakaka"
+            print("kakaka")
             self.ui.searchModeRB.toggle()
         return
 
@@ -849,13 +849,13 @@ class MyMainWindow(QtGui.QMainWindow):
 ##
     def showFontsModToolDialogue(self):
         uiFontDlgFilePath = os.path.join(self.relPath, self.uiFolderName, self.uiFontsToolFileName)
-        #print uiFontDlgFilePath
+        #print(uiFontDlgFilePath)
         if not os.access(uiFontDlgFilePath, os.F_OK) :
-            print "Could not find the required ui file %s for the Font Tool application. Quiting..." % (self.uiFontsToolFileName)
+            print("Could not find the required ui file %s for the Font Tool application. Quiting..." % (self.uiFontsToolFileName))
 
         self.windowFontDLG = MyMainFontDLGWindow(self.ui, self.tryEncoding, self.selGameID)
         # Set up the user interface from Designer.
-        #self.uiFontsTool = uic.loadUi(uiFontDlgFilePath)
+        #self.uiFontsTool = QtCompat.uic.loadUi(uiFontDlgFilePath)
         #self.uiFontsTool.show()
         #self.uiFontsTool.setWindowIcon( self.icon )
 ##
@@ -863,9 +863,9 @@ class MyMainWindow(QtGui.QMainWindow):
 ##
     def showRepackerToolDialogue(self):
         uiRepackerToolFilePath = os.path.join(self.relPath, self.uiFolderName, self.uiRepackerToolFileName)
-        #print uiRepackerToolFilePath
+        #print(uiRepackerToolFilePath)
         if not os.access(uiRepackerToolFilePath, os.F_OK) :
-            print "Could not find the required ui file %s for the Repacker Tool application. Quiting..." % (self.uiRepackerToolFileName)
+            print("Could not find the required ui file %s for the Repacker Tool application. Quiting..." % (self.uiRepackerToolFileName))
 
         self.windowRepackerDLG = MyMainRepackerDLGWindow(self.ui, self.tryEncoding, self.selGameID)
 ##        msgBoxesStub.qMsgBoxInformation(self.ui,  "Gui connection not yet implemented...",
@@ -880,7 +880,7 @@ class MyMainWindow(QtGui.QMainWindow):
 
         text, ok = QtGui.QInputDialog.getText(self.ui, 'Go to...',
             'Go to Line:')
-        if ok and (self.parseInt(text) <> None):
+        if ok and (self.parseInt(text) != None):
             rowToGo = self.parseInt(text) - 1
             if(rowToGo < 0 or rowToGo > plithosOfQuotes - 1 ):
                 msgBoxesStub.qMsgBoxCritical(self.ui,  "Go to line...", "Not a valid line number")
@@ -972,8 +972,8 @@ class MyMainWindow(QtGui.QMainWindow):
         filenameTransOrig = self.ui.openTranslatedFileNameTxtBx.text().strip()
         continueToBackup = True
         #1 Confirm with info about what's gonna happen
-        reply = msgBoxesStub.qMsgBoxQuestion(self.ui, "Backup info message", "This action will backup the active translation file and export its text to a separate .txt file.\nNote that any unsubmitted changes won't be saved in the backup native game file, but will be available in the exported text file!\nDo you want to continue?", QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
-        if reply == QtGui.QMessageBox.No:
+        reply = msgBoxesStub.qMsgBoxQuestion(self.ui, "Backup info message", "This action will backup the active translation file and export its text to a separate .txt file.\nNote that any unsubmitted changes won't be saved in the backup native game file, but will be available in the exported text file!\nDo you want to continue?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        if reply == QMessageBox.No:
             continueToBackup = False
         if continueToBackup == True:
             #1b export text
@@ -998,7 +998,7 @@ class MyMainWindow(QtGui.QMainWindow):
         # TODO: DB initialization (Should happen once, not every time!)
         if not os.access(self.DBFileNameAndRelPath, os.F_OK) :
             #TODO: debug and error message. Show in message box or SessionsErors and quit?
-            #print "CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath)
+            #print("CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath))
             pass
         else:
             conn = sqlite3.connect(self.DBFileNameAndRelPath)
@@ -1007,7 +1007,7 @@ class MyMainWindow(QtGui.QMainWindow):
             self.supportedGames = {}
             c.execute("select ID, Name from supportedGames order by ID")
             for row in c:
-                self.supportedGames[int(row[0])]=unicode.encode("%s" % row[1],self.origEncoding)
+                self.supportedGames[int(row[0])]=row[1] #unicode.encode("%s" % row[1],self.origEncoding)
                 self.ui.selGameCmBx.addItem(self.supportedGames[int(row[0])], int(row[0]))
             # Close the cursor
             c.close()
@@ -1026,7 +1026,7 @@ class MyMainWindow(QtGui.QMainWindow):
         if calcMD5 == "":
             return (None, None)
         #debug
-        #print calcMD5.upper()
+        #print(calcMD5.upper())
         conn = sqlite3.connect(self.DBFileNameAndRelPath)
         c = conn.cursor()
         c.execute("""select GameID, origfilename, validMD5 from """ +
@@ -1038,7 +1038,7 @@ class MyMainWindow(QtGui.QMainWindow):
         conn.commit()
         c.close()
         #debug
-        #print ("%d" % foundGameId).decode(self.origEncoding) + u" :: " + unicodFileName
+        #print(("%d" % foundGameId).decode(self.origEncoding) + u" :: " + unicodFileName)
         return (unicodFileName, foundGameId)
 
     #
@@ -1048,7 +1048,7 @@ class MyMainWindow(QtGui.QMainWindow):
         index = self.ui.selGameCmBx.findData(pGameId)
         if index < 0:
             #TODO: debug and error message. Show in message box or SessionsErors and quit?
-            #print "Error: Game Id index not found in combobox!"
+            #print("Error: Game Id index not found in combobox!")
             index = 0
         self.ui.selGameCmBx.setCurrentIndex(index)
         self.loadSelectedGameID(self.ui.selGameCmBx.currentText())
@@ -1056,19 +1056,19 @@ class MyMainWindow(QtGui.QMainWindow):
 
     def loadSelectedGameID(self, selGameName):
         #debug
-        #print "Loading game id for: %s " % selGameName
+        #print("Loading game id for: %s " % selGameName)
         gameIDFound = False
         for dictKey in self.supportedGames.keys():
             if self.supportedGames[dictKey] == selGameName:
                 self.selGameID = dictKey
                 gameIDFound = True
                 #debug
-                #print "Loaded %s ID: %d " %(self.supportedGames[dictKey], self.selGameID)
+                #print("Loaded %s ID: %d " %(self.supportedGames[dictKey], self.selGameID))
                 break
         if gameIDFound == False:
             # TODO: Error dialog message
             #TODO: debug and error message. Show in message box or SessionsErors and quit?
-            #print "Error! The selected game is not supported! Reverting to %s" % (self.supportedGames[self.defGameID])
+            #print("Error! The selected game is not supported! Reverting to %s" % (self.supportedGames[self.defGameID]))
             self.selGameID = self.defGameID
         return
 
@@ -1079,10 +1079,10 @@ class MyMainWindow(QtGui.QMainWindow):
     def setExportOriginalToTxtFileName(self):
         continueToExport = True
         global listOfEnglishLinesSpeechInfo
-        options = QtGui.QFileDialog.Options()
+        options = QFileDialog.Options()
         if not self.native:
-            options |= QtGui.QFileDialog.DontUseNativeDialog
-        filename = QtGui.QFileDialog.getSaveFileName(self.ui, self.tr('Set the output text file to export the original text into'), self.currentPath, self.tr("Text File (*.txt);;All Files (*)"), options)
+            options |= QFileDialog.DontUseNativeDialog
+        filename = QFileDialog.getSaveFileName(self.ui, self.tr('Set the output text file to export the original text into'), self.currentPath, self.tr("Text File (*.txt);;All Files (*)"), options)
         if filename:
             filename = self.fixFileNameWithOsSep(filename)
             filename = filename.strip()
@@ -1096,7 +1096,7 @@ class MyMainWindow(QtGui.QMainWindow):
             plithosOfQuotes = len(listOfEnglishLinesSpeechInfo)
             if plithosOfQuotes == 0 or self.ui.openFileNameTxtBx.text().strip() == '':
                 #debug
-                #print "%d %s" % (plithosOfQuotes,self.ui.openFileNameTxtBx.text().strip())
+                #print("%d %s" % (plithosOfQuotes,self.ui.openFileNameTxtBx.text().strip()))
                 reply = msgBoxesStub.qMsgBoxCritical(self.ui,  "Information message", "No lines to export were found! Export failed!")
                 continueToExport = False
 
@@ -1122,10 +1122,10 @@ class MyMainWindow(QtGui.QMainWindow):
     def setExportToTxtFileName(self):
         continueToExport = True
         global listOfEnglishLinesSpeechInfo
-        options = QtGui.QFileDialog.Options()
+        options = QFileDialog.Options()
         if not self.native:
-            options |= QtGui.QFileDialog.DontUseNativeDialog
-        filename = QtGui.QFileDialog.getSaveFileName(self.ui, self.tr('Set the output text file to export the translation into'), self.currentPath, self.tr("Text File (*.txt);;All Files (*)"), options)
+            options |= QFileDialog.DontUseNativeDialog
+        filename = QFileDialog.getSaveFileName(self.ui, self.tr('Set the output text file to export the translation into'), self.currentPath, self.tr("Text File (*.txt);;All Files (*)"), options)
         if filename:
             filename = self.fixFileNameWithOsSep(filename)
             filename = filename.strip()
@@ -1139,13 +1139,13 @@ class MyMainWindow(QtGui.QMainWindow):
             plithosOfQuotes = len(listOfEnglishLinesSpeechInfo)
             if plithosOfQuotes == 0: # or self.ui.openTranslatedFileNameTxtBx.text().strip() == '':  # TODO: Restore second clause if required!
                 #debug
-                #print "%d %s" % (plithosOfQuotes,self.ui.openTranslatedFileNameTxtBx.text().strip())
+                #print("%d %s" % (plithosOfQuotes,self.ui.openTranslatedFileNameTxtBx.text().strip()))
                 reply = msgBoxesStub.qMsgBoxCritical(self.ui,  "Information message", "No lines to export were found! Export failed!")
                 continueToExport = False
                 # the overwrite case is auto handled by the dialogue
 #            elif os.access(filename, os.F_OK) :
-#                reply = msgBoxesStub.qMsgBoxQuestion(self.ui, "Information message", "This text file already exists. Do you want to overwrite it?", QtGui.QMessageBox.No | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
-#                if reply == QtGui.QMessageBox.No:
+#                reply = msgBoxesStub.qMsgBoxQuestion(self.ui, "Information message", "This text file already exists. Do you want to overwrite it?", QMessageBox.No | QMessageBox.No, QMessageBox.Yes)
+#                if reply == QMessageBox.No:
 #                    continueToExport = False
 
             if continueToExport == True:
@@ -1169,14 +1169,14 @@ class MyMainWindow(QtGui.QMainWindow):
                     try:
                         myASCIIString = unicode.encode("%s" % datoTmp, 'utf-8', 'ignore')
                     except ValueError:
-                        print "error #1"
-                        print rowi
+                        print("error #1")
+                        print(rowi)
                     # </scx>
                     myASCIIString=myASCIIString.replace("\n", "0x0A")
                     tmpOpenFile.write("%s\n" % (myASCIIString))
                     exportedLines +=1
         ##                    if rowi >= 1880 and rowi <= 1890:
-        ##                        print "(%d) \'%s\'" % (rowi, myASCIIString)
+        ##                        print("(%d) \'%s\'" % (rowi, myASCIIString))
             finally:
                 tmpOpenFile.close()
         except IOError:
@@ -1186,7 +1186,7 @@ class MyMainWindow(QtGui.QMainWindow):
             if not errorFound:
                 if(exportedLines==pPlithosOfQuotes):
                     reply = msgBoxesStub.qMsgBoxInformation(self.ui,  "Export Translation Text", "Process completed successfully! Exported %d lines." % (exportedLines))
-                elif(exportedLines<>pPlithosOfQuotes):
+                elif(exportedLines!=pPlithosOfQuotes):
                     reply = msgBoxesStub.qMsgBoxWarning(self.ui, "Partial Export Translation Text", "Only a partial export was completed! Exported %d lines." % (exportedLines))
             else:
                 reply = msgBoxesStub.qMsgBoxCritical(self.ui,  "Error in Export Translation Text", "Process did not complete successfully! Exported %d lines." % (exportedLines))
@@ -1206,10 +1206,10 @@ class MyMainWindow(QtGui.QMainWindow):
             reply = msgBoxesStub.qMsgBoxInformation(self.ui,  "information message", "You cannot import a translation text with no original file loaded!")
             return
 
-        options = QtGui.QFileDialog.Options()
+        options = QFileDialog.Options()
         if not self.native:
-            options |= QtGui.QFileDialog.DontUseNativeDialog
-        filename = QtGui.QFileDialog.getOpenFileName(self.ui, "Import from text file ", self.currentPath, self.tr("Text File (*.txt);;All Files (*)"), options)
+            options |= QFileDialog.DontUseNativeDialog
+        filename = QFileDialog.getOpenFileName(self.ui, "Import from text file ", self.currentPath, self.tr("Text File (*.txt);;All Files (*)"), options)
         if filename:
             filename = self.fixFileNameWithOsSep(filename)
             filename = filename.strip()
@@ -1232,7 +1232,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 else:
                     nextline = ""
                     numOfimportedEmptyPaddingLines +=1
-                ##print "%s" s% (nextline)
+                ##print("%s" s% (nextline))
                 self.quoteTableView.model().setData(index, str.decode("%s" % nextline, 'utf-8'), Qt.EditRole)  # unicode(nextline, self.localGrabInstance.getActiveEncoding()))
 
 
@@ -1270,7 +1270,7 @@ class MyMainWindow(QtGui.QMainWindow):
         tmpOpenFile.write(encodedList)
         tmpOpenFile.flush()
         tmpOpenFile.close()
-        #print "Export Pending lines: Exported %d lines to %s " % (len(objListOfPending) - 2, metaFileName)
+        #print("Export Pending lines: Exported %d lines to %s " % (len(objListOfPending) - 2, metaFileName))
         return
 
 
@@ -1311,10 +1311,10 @@ class MyMainWindow(QtGui.QMainWindow):
         objList = json.loads(encodedData)
         if mode == "merge":
             pass
-            #print "Merge mode. For file: %s, MD5 %s, Number of lines %d" % (objList[0], objList[1], len(objList) - 2)
+            #print("Merge mode. For file: %s, MD5 %s, Number of lines %d" % (objList[0], objList[1], len(objList) - 2))
         elif mode == "load":
             pass
-            #print "Load mode. For file: %s, MD5 %s, Number of lines %d" % (objList[0], objList[1], len(objList) - 2)
+            #print("Load mode. For file: %s, MD5 %s, Number of lines %d" % (objList[0], objList[1], len(objList) - 2))
         return objList
 
 
@@ -1322,10 +1322,10 @@ class MyMainWindow(QtGui.QMainWindow):
     # TODO: If there is no associated original file AND the loaded original file does not match (line number at least), then prompt error.
     # TODO: Should add an association to the original file in the SQLite db or sessions xml file. And store the pending lines.
     def setSaveTranslatedFileName(self):
-        options = QtGui.QFileDialog.Options()
+        options = QFileDialog.Options()
         if not self.native:
-            options |= QtGui.QFileDialog.DontUseNativeDialog
-        filename = QtGui.QFileDialog.getSaveFileName(self.ui, self.tr('Set the file for the translated dialogue'), self.currentPath, self.tr("Speech, GUI, Hints File ("+filenameInfoWildCard+");;Credits File (*.credits.xml);;All Files (*)"), options)
+            options |= QFileDialog.DontUseNativeDialog
+        filename = QFileDialog.getSaveFileName(self.ui, self.tr('Set the file for the translated dialogue'), self.currentPath, self.tr("Speech, GUI, Hints File ("+filenameInfoWildCard+");;Credits File (*.credits.xml);;All Files (*)"), options)
         if filename:
             filename = self.fixFileNameWithOsSep(filename)
             filename = filename.strip()
@@ -1341,7 +1341,7 @@ class MyMainWindow(QtGui.QMainWindow):
     def _getExtensionOfFilefullPath(self, filenamefullPath):
         extension = ""
         extension = os.path.splitext(filenamefullPath)[1][1:].strip()
-##        print "extension 2: " + extension
+##        print("extension 2: " + extension)
         return extension
 
     def _checkConditionsForLoadOrMerge(self, mode, filenNameGiv, pGrabberForTranslationDicts):
@@ -1369,7 +1369,7 @@ class MyMainWindow(QtGui.QMainWindow):
             filenNameGiv = filenNameGiv.strip()
             # Translated file can't be the same with the original!!!!
             #debug
-            #print "%s == %s" % (filenNameGiv, self.ui.openFileNameTxtBx.text().strip())
+            #print("%s == %s" % (filenNameGiv, self.ui.openFileNameTxtBx.text().strip()))
             if filenNameGiv == fileNameOrig:
                 reply = msgBoxesStub.qMsgBoxCritical(self.ui,  "Error message", "You cannot set the translated file to be the same file with the original!")
                 continueToOpen = False
@@ -1377,7 +1377,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 # check extension
                 filenameGivExt = self._getExtensionOfFilefullPath(filenNameGiv)
                 filenaOrigExt = self._getExtensionOfFilefullPath(fileNameOrig)
-                if(filenameGivExt <> filenaOrigExt):
+                if(filenameGivExt != filenaOrigExt):
                     reply = msgBoxesStub.qMsgBoxCritical(self.ui,  "Error message", "You cannot "+interimStr+" a translation file that has a different extension than the original!")
                     continueToOpen = False
                 else:
@@ -1395,17 +1395,17 @@ class MyMainWindow(QtGui.QMainWindow):
                         if not dataOrig:
                             dataOrig = None
                         f.close()
-                    if dataGiv == None or dataOrig == None or dataGiv <> dataOrig:
+                    if dataGiv == None or dataOrig == None or dataGiv != dataOrig:
                         reply = msgBoxesStub.qMsgBoxCritical(self.ui,  "Error message", "You cannot "+interimStr+" a translation file that is of a different type than the original!")
                         continueToOpen = False
                     else:
                         (quotesInLoadFile, detectedGID, parsedQuotesList) = self.getQuoteNumberInFile(filenNameGiv, parseQuotesFlag, pGrabberForTranslationDicts)
                         #debug
-                        #print "load file: %d quotes, %d gameId" % (quotesInLoadFile,detectedGID)
-                        if detectedGID <> self.selGameID:
+                        #print("load file: %d quotes, %d gameId" % (quotesInLoadFile,detectedGID))
+                        if detectedGID != self.selGameID:
                             reply = msgBoxesStub.qMsgBoxCritical(self.ui,  "Error message", "You cannot "+interimStr+" a translation file that's for a different game from the original!")
                             continueToOpen = False
-                        if quotesInLoadFile <> plithosOfQuotes:
+                        if quotesInLoadFile != plithosOfQuotes:
                             reply = msgBoxesStub.qMsgBoxCritical(self.ui,  "Error message", "You cannot "+interimStr+" a translation file that has a different number of lines from the original!")
                             continueToOpen = False
         else:
@@ -1438,9 +1438,9 @@ class MyMainWindow(QtGui.QMainWindow):
         continueToOpen = True
 
         reply = msgBoxesStub.qMsgBoxQuestion(self.ui, 'Merge with translation file',
-            "This action will merge a translation file with the one in the active session. \nThe resulting changes won't be saved until you click on the Submit button. \nFor any conflicting lines, all translations will be listed separated by new lines, \nand the quote will be marked as conflicted for manual resolution. \nDo you want to proceed?", QtGui.QMessageBox.Yes |
-            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-        if reply == QtGui.QMessageBox.No:
+            "This action will merge a translation file with the one in the active session. \nThe resulting changes won't be saved until you click on the Submit button. \nFor any conflicting lines, all translations will be listed separated by new lines, \nand the quote will be marked as conflicted for manual resolution. \nDo you want to proceed?", QMessageBox.Yes |
+            QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.No:
             return
 
         plithosOfQuotes = len(listOfEnglishLinesSpeechInfo)
@@ -1448,10 +1448,10 @@ class MyMainWindow(QtGui.QMainWindow):
             reply = msgBoxesStub.qMsgBoxInformation(self.ui,  "information message", "You cannot merge with a translation file, with no original file loaded!")
             continueToOpen = False
             return
-        options = QtGui.QFileDialog.Options()
+        options = QFileDialog.Options()
         if not self.native:
-            options |= QtGui.QFileDialog.DontUseNativeDialog
-        filenNameGiv = QtGui.QFileDialog.getOpenFileName(self.ui,
+            options |= QFileDialog.DontUseNativeDialog
+        filenNameGiv = QFileDialog.getOpenFileName(self.ui,
             "Merge with Translated Dialog File ", self.currentPath,
             self.tr("Speech, GUI File ("+filenameInfoWildCard+");;Hints File (*.csv);;Credits File (*.xml);;All Files (*)"), options)
         if(filenNameGiv):
@@ -1486,7 +1486,7 @@ class MyMainWindow(QtGui.QMainWindow):
                         numOfQuotesChangedInImportedFile+=1
                         indexOfQuoteInTable =  self.quoteTableView.model().index(rowi, 1, QModelIndex())
                         datoTmp = lm.data(indexOfQuoteInTable).toPyObject()
-                        if "%s" % (datoTmp) <> unicode(listOfForeignLinesOrigSpeechInfo[rowi][0], self.activeEnc):
+                        if "%s" % (datoTmp) != unicode(listOfForeignLinesOrigSpeechInfo[rowi][0], self.activeEnc):
                             #both lines (existing and imported are changed so there may be conflict.
                             # but they could be changed and the same between them so check that too
                             if "%s" % (datoTmp) == unicode(myParsedQuotesList[rowi][0], self.activeEnc):
@@ -1513,7 +1513,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 if(numOfQuotesInImportedFile>0):
                     pendLinesList =[]
                     pendLinesList = self.importPendingLines(filenNameGiv +".meta" , "merge")
-                    if(pendLinesList <> None and len(pendLinesList) > 2):
+                    if(pendLinesList != None and len(pendLinesList) > 2):
                         # essentially go through all lines in list and mark them
                         for rownum in pendLinesList[2:]:
                             indexOfQuoteInTable =  self.quoteTableView.model().index(rownum, 1, QModelIndex())
@@ -1545,19 +1545,19 @@ class MyMainWindow(QtGui.QMainWindow):
         plithosOfQuotes = len(listOfEnglishLinesSpeechInfo)
 
         reply = msgBoxesStub.qMsgBoxQuestion(self.ui, 'Load translation file',
-            "This action will load a translation file in the active session,\nreplacing the translation file that is currently used. \nDo you want to proceed?", QtGui.QMessageBox.Yes |
-            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-        if reply == QtGui.QMessageBox.No:
+            "This action will load a translation file in the active session,\nreplacing the translation file that is currently used. \nDo you want to proceed?", QMessageBox.Yes |
+            QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.No:
             return
 
         if(plithosOfQuotes == 0 or self.ui.openFileNameTxtBx.text().strip()==''):
             reply = msgBoxesStub.qMsgBoxInformation(self.ui,  "information message", "You cannot load a translation file, with no original file loaded!")
             continueToOpen = False
             return
-        options = QtGui.QFileDialog.Options()
+        options = QFileDialog.Options()
         if not self.native:
-            options |= QtGui.QFileDialog.DontUseNativeDialog
-        filenNameGiv = QtGui.QFileDialog.getOpenFileName(self.ui,
+            options |= QFileDialog.DontUseNativeDialog
+        filenNameGiv = QFileDialog.getOpenFileName(self.ui,
             "Open Translated Dialog File ", self.currentPath,
             self.tr("Speech, GUI File ("+filenameInfoWildCard+");;Hints File (*.csv);;Credits File (*.xml);;All Files (*)"), options)
         if filenNameGiv:
@@ -1591,7 +1591,7 @@ class MyMainWindow(QtGui.QMainWindow):
                     self.loadQuoteFileinTable()
                     pendLinesList =[]
                     pendLinesList = self.importPendingLines(filenNameGiv +".meta" , "load")
-                    if(pendLinesList <> None and len(pendLinesList) > 2):
+                    if(pendLinesList != None and len(pendLinesList) > 2):
                         # essentially go through all lines in list and mark them
                         for rownum in pendLinesList[2:]:
                             indexOfQuoteInTable =  self.quoteTableView.model().index(rownum, 1, QModelIndex())
@@ -1611,17 +1611,18 @@ class MyMainWindow(QtGui.QMainWindow):
     # Open one of the supported Original Files.
     #
     def setOpenFileName(self):
-        options = QtGui.QFileDialog.Options()
+        options = QFileDialog.Options()
 #        self.native = True
         if not self.native:
-            options |= QtGui.QFileDialog.DontUseNativeDialog
-        filenNameGiv = QtGui.QFileDialog.getOpenFileName(self.ui,
+            options |= QFileDialog.DontUseNativeDialog
+        filenNameGiv = QFileDialog.getOpenFileName(self.ui,
             "Open Original Dialog File ",
             #self.ui.openFileNameTxtBx.text(),
             self.currentPath,
             ## $4$4
 ##            "Speech File (*."+filenameSpeechInfo+");;GUI File (*."+filenameUIText+ ");;Hints File (*.hints.csv);;Credits File (*.credits.xml);;All Files (*)", options)
-            "Speech File MI1 ("+filenameSpeechInfo+");;Speech File MI2 ("+filenameFrSpeechInfo+");;GUI File MI1 ("+filenameUIText+ ");;GUI File MI2 ("+filenameFrUIText+ ");;Hints File (*.hints.csv);;Credits File (*.credits.xml);;All Files (*)", options)
+            filter="Speech File MI1 ("+filenameSpeechInfo+");;Speech File MI2 ("+filenameFrSpeechInfo+");;GUI File MI1 ("+filenameUIText+ ");;GUI File MI2 ("+filenameFrUIText+ ");;Hints File (*.hints.csv);;Credits File (*.credits.xml);;All Files (*)",
+            options=options)
 
         if filenNameGiv:
             filenNameGiv= self.fixFileNameWithOsSep(filenNameGiv)
@@ -1686,7 +1687,7 @@ class MyMainWindow(QtGui.QMainWindow):
         del listOfLabelsSpeechInfoOrig[:]
 
         self.ui.numOfEntriesOrigTxtBx.setText(u"0")
-        if self.quoteTableView.model() <> None:
+        if self.quoteTableView.model() != None:
             self.quoteTableView.model().clear()
         self.quoteTableView.clearSpans()
 
@@ -1694,11 +1695,11 @@ class MyMainWindow(QtGui.QMainWindow):
         ( foundOfficialFileName, foundgameid) = self.getFileNameAndGameIdFromMD5(fullPathsFilename)
         if not (foundOfficialFileName is None or foundgameid is None):
             #debug
-            #print "Setting game id"
+            #print("Setting game id")
             self.setSelectedGameByGameId(foundgameid)
             self.localGrabInstance = grabberFromPNG(self.tryEncoding, self.selGameID)
             #debug
-            #print "Game id was set"
+            #print("Game id was set")
             self.parseQuoteFile(fullPathsFilename, selectedLanguageOffset, self.localGrabInstance)
         else:
             self.localGrabInstance = grabberFromPNG(self.tryEncoding, self.selGameID)
@@ -1735,9 +1736,9 @@ class MyMainWindow(QtGui.QMainWindow):
                 linesToMarkList.append(guiLineNum)
         conn.commit()
         c.close()
-        ##print "LINES TO MARK: "
-        ##print linesToMarkList
-        ##print "active session %s" % (str(self.activeSessionID))
+        ##print("LINES TO MARK: ")
+        ##print(linesToMarkList)
+        ##print("active session %s" % (str(self.activeSessionID)))
         #
         # end of retrieving markers
         #
@@ -1749,7 +1750,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 index = lm.index(rowi, columni, QModelIndex())
                 if columni == 0:
                     # DEBUG
-                    #print rowi, ": ", listOfEnglishLinesSpeechInfo[rowi][1]
+                    #print(rowi, ": ", listOfEnglishLinesSpeechInfo[rowi][1])
                     #do we need origEncoding here?
                     try:
                         lm.setData(index, unicode(listOfEnglishLinesSpeechInfo[rowi][1], self.activeEnc), Qt.EditRole)
@@ -1757,21 +1758,21 @@ class MyMainWindow(QtGui.QMainWindow):
                         lm.setData(index, unicode("***UNABLE TO RETRIEVE****", self.origEncoding), Qt.EditRole)
 
                 elif columni == 1:
-##                    print localGrabInstance.getActiveEncoding()
-##                    print listOfEnglishLinesSpeechInfo[rowi][1]
-##                    print listOfUntranslatedLinesSpeechInfo[rowi][1]
-##                    print unicode(listOfUntranslatedLinesSpeechInfo[rowi][1], localGrabInstance.getActiveEncoding())
+##                    print(localGrabInstance.getActiveEncoding())
+##                    print(listOfEnglishLinesSpeechInfo[rowi][1])
+##                    print(listOfUntranslatedLinesSpeechInfo[rowi][1])
+##                    print(unicode(listOfUntranslatedLinesSpeechInfo[rowi][1], localGrabInstance.getActiveEncoding()))
 ##                    lm.setData(index, unicode("", activeEnc))
-                    ##print "uh oh! %d: %s" % (rowi, listOfUntranslatedLinesSpeechInfo[rowi][1])
+                    ##print("uh oh! %d: %s" % (rowi, listOfUntranslatedLinesSpeechInfo[rowi][1]))
                     if(rowi < plithosOfUntransQuotes):
                         # <scx>
                         #lm.setData(index, unicode(listOfUntranslatedLinesSpeechInfo[rowi][1], self.activeEnc), Qt.EditRole)
                         try:
                             lm.setData(index, unicode(listOfUntranslatedLinesSpeechInfo[rowi][1], self.activeEnc, errors='ignore'), Qt.EditRole)
                         except ValueError:
-                            print "error #2"
-                            print rowi
-                            print listOfUntranslatedLinesSpeechInfo[rowi][1]
+                            print("error #2")
+                            print(rowi)
+                            print(listOfUntranslatedLinesSpeechInfo[rowi][1])
                         # </scx>
                     else:
                         lm.setData(index, unicode("", self.activeEnc), Qt.EditRole)
@@ -1783,7 +1784,7 @@ class MyMainWindow(QtGui.QMainWindow):
                         i = linesToMarkList.index(rowi)
                         index.model().setData(index, True, Qt.EditRole)
                     except ValueError:
-                        ##print "exception"
+                        ##print("exception")
                         index.model().setData(index, False, Qt.EditRole) # no match
                 elif columni == 3:
                     #
@@ -1793,20 +1794,20 @@ class MyMainWindow(QtGui.QMainWindow):
 #                    tmpItem.setCheckable(False)
                     tmpItem.setEnabled(False)
                     # <scx>
-                    #if unicode(listOfUntranslatedLinesSpeechInfo[rowi][1], self.activeEnc) <> unicode(listOfForeignLinesOrigSpeechInfo[rowi][0], self.activeEnc):
+                    #if unicode(listOfUntranslatedLinesSpeechInfo[rowi][1], self.activeEnc) != unicode(listOfForeignLinesOrigSpeechInfo[rowi][0], self.activeEnc):
                     #    index.model().setData(index, True, Qt.EditRole) # TODO: fill in from saved file (comparisn with original file)
                     #else:
                     #    index.model().setData(index, False, Qt.EditRole)
                     try:
-                        if unicode(listOfUntranslatedLinesSpeechInfo[rowi][1], self.activeEnc, errors='ignore') <> unicode(listOfForeignLinesOrigSpeechInfo[rowi][0], self.activeEnc, errors='ignore'):
+                        if unicode(listOfUntranslatedLinesSpeechInfo[rowi][1], self.activeEnc, errors='ignore') != unicode(listOfForeignLinesOrigSpeechInfo[rowi][0], self.activeEnc, errors='ignore'):
                             index.model().setData(index, True, Qt.EditRole) # TODO: fill in from saved file (comparisn with original file)
                         else:
                             index.model().setData(index, False, Qt.EditRole)
                     except ValueError:
-                        print "error #3"
-                        print rowi
-                        print listOfUntranslatedLinesSpeechInfo[rowi][1]
-                        print listOfForeignLinesOrigSpeechInfo[rowi][0]
+                        print("error #3")
+                        print(rowi)
+                        print(listOfUntranslatedLinesSpeechInfo[rowi][1])
+                        print(listOfForeignLinesOrigSpeechInfo[rowi][0])
                     # </scx>
                 elif columni == 4:
                     tmpItem.setEditable(False)
@@ -1824,7 +1825,7 @@ class MyMainWindow(QtGui.QMainWindow):
 ##                    tmpItem.setEnabled(False)
 ##                    index.model().setData(index, False, Qt.EditRole) # TODO: fill in from saved file (comparisn with original file)
 ##                else:
-##                    ##print "LALAL"
+##                    ##print("LALAL")
 ##                    tmpItem.setEditable(True)
 ###                    tmpItem.setCheckable(True)
 ##                    tmpItem.setEnabled(True)
@@ -1832,9 +1833,9 @@ class MyMainWindow(QtGui.QMainWindow):
 ##                        i = linesToMarkList.index(rowi)
 ##                        index.model().setData(index, True, Qt.EditRole)
 ##                    except ValueError:
-##                        ##print "exception"
+##                        ##print("exception")
 ##                        index.model().setData(index, False, Qt.EditRole) # no match
-###                    print "uh oh! %s " % index.model().data(index).toBool() #
+###                    print("uh oh! %s " % index.model().data(index).toBool() #)
 ###                lm.setItem(rowi,columni,tmpItem)
         self.quoteTableView.setItemDelegateForColumn(0,self.custTextDocDelegate )
         self.quoteTableView.setItemDelegateForColumn(1,self.custTextDocDelegate )
@@ -1880,7 +1881,7 @@ class MyMainWindow(QtGui.QMainWindow):
             indexRow = index.row()
             indexCol = index.column()
             if qEditHint == 1:
-                #print "row: ", indexRow, " col: ",indexCol  # column is shifted to the next (probably due to the EditNextItem signal). So we need to subtract one from the column. To be safe we could set it explicitly to 1, since only that column should be editable. For now leave it with subtract.
+                #print("row: ", indexRow, " col: ",indexCol  # column is shifted to the next (probably due to the EditNextItem signal). So we need to subtract one from the column. To be safe we could set it explicitly to 1, since only that column should be editable. For now leave it with subtract.)
                 lmRows = lm.rowCount()
                 if ((indexRow+1) < lmRows):
                     newIndex = lm.index(indexRow+1, indexCol, QModelIndex())
@@ -1888,7 +1889,7 @@ class MyMainWindow(QtGui.QMainWindow):
                     self.quoteTableView.setFocus()
                     self.quoteTableView.edit(newIndex)
             elif qEditHint == 0:
-                #print "row: ", indexRow, " col: ", indexCol
+                #print("row: ", indexRow, " col: ", indexCol)
                 if ((indexRow) > 0):
                     newIndex = lm.index(indexRow-1, indexCol, QModelIndex())
                     self.quoteTableView.setCurrentIndex(newIndex)
@@ -1903,26 +1904,26 @@ class MyMainWindow(QtGui.QMainWindow):
     def handleChangedItem(self, item = None):
         #localGrabInstance = grabberFromPNG(self.tryEncoding, self.selGameID)
         #activeEnc = localGrabInstance.getActiveEncoding()
-        if item == None or item.column() <> 1:
+        if item == None or item.column() != 1:
             return
-        ##print "column: %d and row:  %d" % (item.column(), item.row())
+        ##print("column: %d and row:  %d" % (item.column(), item.row()))
         indexChangedChkbx = item.index().model().index(item.row(), 3, QModelIndex())
         datoTmp = self.quoteTableView.model().data(item.index()).toPyObject()
 
         # <scx>
-        #if "%s" % (datoTmp) <> unicode(listOfForeignLinesOrigSpeechInfo[item.row()][0], self.activeEnc):
+        #if "%s" % (datoTmp) != unicode(listOfForeignLinesOrigSpeechInfo[item.row()][0], self.activeEnc):
         #    indexChangedChkbx.model().setData(indexChangedChkbx, True, Qt.EditRole)
         #else:
         #    indexChangedChkbx.model().setData(indexChangedChkbx, False, Qt.EditRole)
         try:
-            if "%s" % (datoTmp) <> unicode(listOfForeignLinesOrigSpeechInfo[item.row()][0], self.activeEnc, errors='ignore'):
+            if "%s" % (datoTmp) != unicode(listOfForeignLinesOrigSpeechInfo[item.row()][0], self.activeEnc, errors='ignore'):
                 indexChangedChkbx.model().setData(indexChangedChkbx, True, Qt.EditRole)
             else:
                 indexChangedChkbx.model().setData(indexChangedChkbx, False, Qt.EditRole)
         except ValueError:
-            print "error #4"
-            print rowi
-            print listOfForeignLinesOrigSpeechInfo[item.row()][0]
+            print("error #4")
+            print(rowi)
+            print(listOfForeignLinesOrigSpeechInfo[item.row()][0])
         # </scx>
 
     #
@@ -1934,7 +1935,7 @@ class MyMainWindow(QtGui.QMainWindow):
         ##scrollMargin = self.quoteTableView.autoScrollMargin()
         lmCols = lm.columnCount()
         if not self.statusLoadingAFile and not self.ignoreQuoteTableResizeEventFlg and columnIndex < lmCols -1: ## we try not to ignore last column resizes (maximize/restore case fix)
-            #print "%d %d %d" % (columnIndex, oldSize, newSize)
+            #print("%d %d %d" % (columnIndex, oldSize, newSize))
             totalColumnWidth = 0.0
             #totalColumnWidth = self.quoteTableView.width() #0.0
             totalColumnPercentMinusLast = 0.0
@@ -1949,15 +1950,15 @@ class MyMainWindow(QtGui.QMainWindow):
             for coli in range(0, lmCols - 1):
                 totalColumnPercentMinusLast += trunc(100*1000000* self.quoteTableView.columnWidth(coli)/totalColumnWidth)/1000000.0
                 listOfColumnWidths.append( ( coli ,trunc(100*1000000* self.quoteTableView.columnWidth(coli)/totalColumnWidth)/1000000.0)  )
-                #print "getting width %i: %f (%f)" % (coli, self.quoteTableView.columnWidth(coli) , trunc(100*1000000* self.quoteTableView.columnWidth(coli)/totalColumnWidth)/1000000.0)
+                #print("getting width %i: %f (%f)" % (coli, self.quoteTableView.columnWidth(coli) , trunc(100*1000000* self.quoteTableView.columnWidth(coli)/totalColumnWidth)/1000000.0))
 
 ##            listOfColumnWidths.append( ( lmCols-1 ,trunc(100*100* self.quoteTableView.columnWidth(lmCols-1)/totalColumnWidth)/100.0)  )
-            #print "getting width %i: %f (%f)" % (lmCols-1, self.quoteTableView.columnWidth(lmCols-1) , trunc(100*1000000* self.quoteTableView.columnWidth(lmCols-1)/totalColumnWidth)/1000000.0)
-            #print "Total width : %f" % (totalColumnWidth,)
+            #print("getting width %i: %f (%f)" % (lmCols-1, self.quoteTableView.columnWidth(lmCols-1) , trunc(100*1000000* self.quoteTableView.columnWidth(lmCols-1)/totalColumnWidth)/1000000.0))
+            #print("Total width : %f" % (totalColumnWidth,))
 
-##                    print "col: %d width: %d percent: %f" % (coli, self.quoteTableView.columnWidth(coli), trunc(100*100* self.quoteTableView.columnWidth(coli)/totalColumnWidth)/100.0 )
+##                    print("col: %d width: %d percent: %f" % (coli, self.quoteTableView.columnWidth(coli), trunc(100*100* self.quoteTableView.columnWidth(coli)/totalColumnWidth)/100.0 ))
 ##                else:
-##                    print "col: %d width: %d percent: %f" % (coli, self.quoteTableView.columnWidth(coli), 100 - totalColumnPercentMinusLast)
+##                    print("col: %d width: %d percent: %f" % (coli, self.quoteTableView.columnWidth(coli), 100 - totalColumnPercentMinusLast))
 
 
             #
@@ -1977,22 +1978,22 @@ class MyMainWindow(QtGui.QMainWindow):
 ##                tableHeaderViewInst.setStretchLastSection(False)
 ##                tableHeaderViewInst.setStretchLastSection(True)
 ##        elif self.statusLoadingAFile:
-##            print "resized while loading. Ignored..."
+##            print("resized while loading. Ignored...")
 ##        else:
-##            print "resized last column. Ignored..."
+##            print("resized last column. Ignored...")
         return
 
     # TODO: consider delegate?
     def tableViewResizeEvent(self, oldWidth, newWidth):
         if not self.statusLoadingAFile and not self.ignoreQuoteTableResizeEventFlg and oldWidth!=newWidth:
-            #print "tableViewResizeEvent old:%d new:%d" %(oldWidth, newWidth)
+            #print("tableViewResizeEvent old:%d new:%d" %(oldWidth, newWidth))
             self.restoreSessionSavedColumSizes(True)
 ##        elif self.statusLoadingAFile:
-##            print "Ignored LOADING FILE resize  old:%d new:%d" %(oldWidth, newWidth)
+##            print("Ignored LOADING FILE resize  old:%d new:%d" %(oldWidth, newWidth))
 ##        elif self.statusLoadingAFile:
-##            print "IGNORED ignore table resiz  old:%d new:%d" %(oldWidth, newWidth)
+##            print("IGNORED ignore table resiz  old:%d new:%d" %(oldWidth, newWidth))
 ##        elif oldWidth==newWidth:
-##            print "IGNORED equal width old:%d new:%d" %(oldWidth, newWidth)
+##            print("IGNORED equal width old:%d new:%d" %(oldWidth, newWidth))
 
 
     # TODO: resizing the last column causes a horizontal bar to appear. WHY?!
@@ -2002,10 +2003,10 @@ class MyMainWindow(QtGui.QMainWindow):
         scrollMargin = self.quoteTableView.autoScrollMargin()
         if not os.access(self.DBFileNameAndRelPath, os.F_OK) :
             #debug
-            print "CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath)
+            print("CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath))
         else:
             #
-            if self.jSettingsInMemDict.has_key('columnsSizes'):
+            if 'columnsSizes' in self.jSettingsInMemDict:
                 noRestoreInfo = False
                 listOfColumnWidths = self.jSettingsInMemDict['columnsSizes']
                 # ((index, percent ), (), (), ()) for all columns minus the last one
@@ -2023,23 +2024,23 @@ class MyMainWindow(QtGui.QMainWindow):
                 tableVertHeaderViewInst = self.quoteTableView.verticalHeader()
                 vertHeaderPixels = tableVertHeaderViewInst.width()
                 totalColumnWidth -= (vertHeaderPixels + scrollMargin)
-                #print "verhead %d, scrollMarg %d" % (vertHeaderPixels, scrollMargin)
+                #print("verhead %d, scrollMarg %d" % (vertHeaderPixels, scrollMargin))
                 ##tableHeaderViewInst.setStretchLastSection(False)
                 self.ignoreQuoteTableResizeEventFlg = True
                 for coli in range(0, lmCols-1):
                     for itemLst in listOfColumnWidths:
                         if(itemLst[0] == coli):
                             self.quoteTableView.setColumnWidth (itemLst[0], (itemLst[1] * totalColumnWidth ) / 100.0)
-                            #print "setting width %i: %f " % (itemLst[0], (itemLst[1] * totalColumnWidth ) / 100.0)
+                            #print("setting width %i: %f " % (itemLst[0], (itemLst[1] * totalColumnWidth ) / 100.0))
                             totalColumnWidthMinusLast += (itemLst[1] * totalColumnWidth ) / 100.0
                             break
                 self.quoteTableView.setColumnWidth(lmCols-1, totalColumnWidth - totalColumnWidthMinusLast -2 ) # minus 2 seems to be helping not show the bottom horizontal scroll.
                 self.ignoreQuoteTableResizeEventFlg = False
-                #print "setting width %i: %f " % (lmCols-1, totalColumnWidth - totalColumnWidthMinusLast -2  )
-                #print "Total width : %f, table %f table minor %f " % (totalColumnWidth, self.quoteTableView.width(), self.quoteTableView.width() - (vertHeaderPixels + scrollMargin))
+                #print("setting width %i: %f " % (lmCols-1, totalColumnWidth - totalColumnWidthMinusLast -2  ))
+                #print("Total width : %f, table %f table minor %f " % (totalColumnWidth, self.quoteTableView.width(), self.quoteTableView.width() - (vertHeaderPixels + scrollMargin)))
                 ##tableHeaderViewInst.setStretchLastSection(True)
         if noRestoreInfo:
-            ##print "No restore info start"
+            ##print("No restore info start")
             lm = self.quoteTableView.model()
             lmCols = lm.columnCount()
 #            tableHeaderViewInst.setStretchLastSection(True)
@@ -2064,13 +2065,13 @@ class MyMainWindow(QtGui.QMainWindow):
                 totalColumnWidthMinusLast += widthForCheckboxColumns
             self.quoteTableView.setColumnWidth(lmCols - 1, totalColumnWidth - totalColumnWidthMinusLast - 3)
             self.ignoreQuoteTableResizeEventFlg = False
-            ##print "No restore info end"
+            ##print("No restore info end")
 
 #            tableHeaderViewInst.setStretchLastSection(False)
         return
 
     def setPendingItem(self, index = None):
-        if index == None or index.column() <> 1:
+        if index == None or index.column() != 1:
             return
         indexChkBx = index.model().index(index.row(), 2, QModelIndex())
         itemChkBx = index.model().itemFromIndex(indexChkBx)
@@ -2079,7 +2080,7 @@ class MyMainWindow(QtGui.QMainWindow):
         indexChkBx.model().setData(indexChkBx, True, Qt.EditRole)
 
     def setConflictedItem(self, index = None):
-        if index == None or index.column() <> 1:
+        if index == None or index.column() != 1:
             return
         indexChkBx = index.model().index(index.row(), 4, QModelIndex())
         itemChkBx = index.model().itemFromIndex(indexChkBx)
@@ -2172,7 +2173,7 @@ class MyMainWindow(QtGui.QMainWindow):
             for rowi in range(0,plithosOfQuotes):
                 index =  self.quoteTableView.model().index(rowi, 1, QModelIndex())
                 datoTmp = self.quoteTableView.model().data(index).toPyObject()
-#                print "Line: %d. Translated text: %s" % ( rowi, datoTmp)
+#                print("Line: %d. Translated text: %s" % ( rowi, datoTmp))
                 myASCIIString = unicode.encode("%s" % datoTmp, self.activeEnc)
                 translatedTextAsCharsListToWriteWithZeroTerm = self.makeStringIntoModifiedAsciiCharlistToBeWritten(myASCIIString, self.localGrabInstance)
                 origLengthAsMultiSixteen = listOfUntranslatedLinesSpeechInfo[rowi][2] +1 # The file counts the first 0x00 after the end as a character. orig length means length of untrans text before the (any) change
@@ -2186,9 +2187,9 @@ class MyMainWindow(QtGui.QMainWindow):
                 deviationOffset = newLengthAsMultiSixteen - origLengthAsMultiSixteen
 
                 copyOFlistOfUntranslatedLinesSpeechInfo[rowi][1] = "".join(translatedTextAsCharsListToWriteWithZeroTerm)
-                if deviationOffset <> 0 :
+                if deviationOffset != 0 :
                     #debug
-                    #print "ONE SUCH CASE offset = %d for row %d " % (deviationOffset,rowi)
+                    #print("ONE SUCH CASE offset = %d for row %d " % (deviationOffset,rowi))
                     # fix the copyOFlistOfUntranslatedLinesSpeechInfo addresses
                     for myiter2 in range(0, len(copyOFlistOfUntranslatedLinesSpeechInfo)):
                         if copyOFlistOfUntranslatedLinesSpeechInfo[myiter2][0] > copyOFlistOfUntranslatedLinesSpeechInfo[rowi][0]:  #because the addresses are not stored strictly monotonously we check from the beginning and change those greater than the current one
@@ -2200,7 +2201,7 @@ class MyMainWindow(QtGui.QMainWindow):
             endAddress = 0
             tmpOpenFile.seek(beginAddrOfIndexMatrix)
             startpos = tmpOpenFile.tell()
-##            print "%X" % startpos
+##            print("%X" % startpos)
             tmpWord = tmpOpenFile.read(4)
             if tmpWord == "":
                 endOfFileReached = True
@@ -2229,7 +2230,7 @@ class MyMainWindow(QtGui.QMainWindow):
             (savedFlag, mySessionName, myFullPathToOrigFile, myFullPathToTransFile, myGameID, myID, myOrigFileMD5, myTransFileMD5) = self.createAndSaveSession(fullPathsFilename, fullcopyFileName)
             self.exportPendingLines(myFullPathToTransFile, myTransFileMD5)
 
-#            print "Process Completed. Errors encountered %d." % errorsEncountered
+#            print("Process Completed. Errors encountered %d." % errorsEncountered)
 
         ##########################################################################
         #  CSV HINTS CASE
@@ -2251,16 +2252,16 @@ class MyMainWindow(QtGui.QMainWindow):
             if  self.selGameID==2:
                 beginAddrOfIndexMatrix = 0xC6C0 # MI2:SE
             maxNumOfHintsInSeries = 4
-  #          print "EECHOO EECHOO"
-  #          print copyOFlistOfAllLinesHintsCSV
-  #          print "EECHOO EECHOO"
+  #          print("EECHOO EECHOO")
+  #          print(copyOFlistOfAllLinesHintsCSV)
+  #          print("EECHOO EECHOO")
             deviationOffset = 0 # this is multiples of 0x10 and shows how much we should add or subtract from indexes because of changes in quotes lenght (increases or reductions)
             tmpOpenFile = open(fullcopyFileName, 'r+b')
             for rowi in range(0,plithosOfQuotes):
                 index =  self.quoteTableView.model().index(rowi, 1, QModelIndex())
                 datoTmp = self.quoteTableView.model().data(index).toPyObject()
-                if datoTmp <> "" and datoTmp.strip() <> "" and listOfUntranslatedLinesSpeechInfo[rowi][2] > 0: #don't store empty slots. and (for now) don't add new quotes!
-    #                print "Line: %d. Translated text: %s" % ( rowi, datoTmp)
+                if datoTmp != "" and datoTmp.strip() != "" and listOfUntranslatedLinesSpeechInfo[rowi][2] > 0: #don't store empty slots. and (for now) don't add new quotes!
+    #                print("Line: %d. Translated text: %s" % ( rowi, datoTmp))
                     myASCIIString = unicode.encode("%s" % datoTmp, self.activeEnc)
                     translatedTextAsCharsListToWriteWithZeroTerm = self.makeStringIntoModifiedAsciiCharlistToBeWritten(myASCIIString, self.localGrabInstance)
                     origLengthAsMultiSixteen = listOfUntranslatedLinesSpeechInfo[rowi][2] +1 # The file counts the first 0x00 after the end as a character.
@@ -2272,7 +2273,7 @@ class MyMainWindow(QtGui.QMainWindow):
                         while(len(translatedTextAsCharsListToWriteWithZeroTerm) < newLengthAsMultiSixteen):
                             translatedTextAsCharsListToWriteWithZeroTerm.append('\x00') # we have already appended a 0x00 in the makeStringIntoModifiedAsciiCharlistToBeWritten function
                     deviationOffset = newLengthAsMultiSixteen - origLengthAsMultiSixteen
-    #                print "Deviation offset: ", rowi+1, deviationOffset
+    #                print("Deviation offset: ", rowi+1, deviationOffset)
     #                deviationOffset += diffBetweenLengths
                     # find the index in the list of all quotes copyOFlistOflistsOfAllQuotesHintsCSV
                     transRowMetritis = 0
@@ -2295,11 +2296,11 @@ class MyMainWindow(QtGui.QMainWindow):
                             break
 
                     copyOFlistOfAllLinesHintsCSV[idxOfTransQuoteInWholeList][1] = "".join(translatedTextAsCharsListToWriteWithZeroTerm)
-                    #print "Line: %d (%d, %d). Translated text to write: %s" % (rowi+1, groupQuoteIdx, innerQuoteIdx, "".join(translatedTextAsCharsListToWriteWithZeroTerm))
+                    #print("Line: %d (%d, %d). Translated text to write: %s" % (rowi+1, groupQuoteIdx, innerQuoteIdx, "".join(translatedTextAsCharsListToWriteWithZeroTerm)))
                     # shift of the rest quotes
-                    if deviationOffset <> 0 :
+                    if deviationOffset != 0 :
                         #debug
-                        #print "ONE SUCH CASE offset = %d for row %d " % (deviationOffset,rowi)
+                        #print("ONE SUCH CASE offset = %d for row %d " % (deviationOffset,rowi))
                         # fix the copyOFlistOfAllLinesHintsCSV addresses
                         for myiter2 in range(idxOfTransQuoteInWholeList+1, len(copyOFlistOfAllLinesHintsCSV)):
                             if copyOFlistOfAllLinesHintsCSV[myiter2][0] > 0: #don't add the offset to null addresses
@@ -2310,7 +2311,7 @@ class MyMainWindow(QtGui.QMainWindow):
                             for tmpInnerIt in range(0, len(copyOFlistOflistsOfAllQuotesHintsCSV[tmpOuterIt])):
                                 if(auksonMetritis > idxOfTransQuoteInWholeList) and (copyOFlistOflistsOfAllQuotesHintsCSV[tmpOuterIt][tmpInnerIt] > 0): #don't add the offset to null addresses
                                     copyOFlistOflistsOfAllQuotesHintsCSV[tmpOuterIt][tmpInnerIt] += deviationOffset
-    ##                                print "Changed"
+    ##                                print("Changed")
                                 auksonMetritis+=1
     ##                    # and fix the copyOFlistOflistsOfAllQuotesHintsCSV addresses
     ##                    for myOuterIter2 in range(tmpOuterIt, len(copyOFlistOflistsOfAllQuotesHintsCSV)):
@@ -2335,9 +2336,9 @@ class MyMainWindow(QtGui.QMainWindow):
             #
             # write then the dump of the quotes in all languages as per copyOFlistOfAllLinesHintsCSV
             #
-#            print "EECHOO EECHOO"
- #           print copyOFlistOfAllLinesHintsCSV
-#            print "EECHOO EECHOO"
+#            print("EECHOO EECHOO")
+ #           print(copyOFlistOfAllLinesHintsCSV)
+#            print("EECHOO EECHOO")
 
             tmpOpenFile.seek(beginAddrOfIndexMatrix + 0x10 * len(copyOFlistOflistsOfAllQuotesHintsCSV))
             for myiter2 in range(0, len(copyOFlistOfAllLinesHintsCSV)):
@@ -2348,7 +2349,7 @@ class MyMainWindow(QtGui.QMainWindow):
             tmpOpenFile.close()
             (savedFlag, mySessionName, myFullPathToOrigFile, myFullPathToTransFile, myGameID, myID, myOrigFileMD5, myTransFileMD5) = self.createAndSaveSession(fullPathsFilename, fullcopyFileName)
             self.exportPendingLines(myFullPathToTransFile, myTransFileMD5)
-#            print "Process Completed. Errors encountered %d." % errorsEncountered
+#            print("Process Completed. Errors encountered %d." % errorsEncountered)
 
         #
         #
@@ -2360,7 +2361,7 @@ class MyMainWindow(QtGui.QMainWindow):
             for rowi in range(0,plithosOfQuotes):
                 index =  self.quoteTableView.model().index(rowi, 1, QModelIndex())
                 datoTmp = self.quoteTableView.model().data(index).toPyObject()
-                #print "Line: %d. Translated text: %s" % ( rowi, datoTmp)
+                #print("Line: %d. Translated text: %s" % ( rowi, datoTmp))
                 myASCIIString = unicode.encode("%s" % datoTmp, self.activeEnc)
                 translatedTextAsCharsListToWriteWithZeroTerm = self.makeStringIntoModifiedAsciiCharlistToBeWritten(myASCIIString, self.localGrabInstance)
                 #
@@ -2369,7 +2370,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 # O length elegxos autos prepei na ginetai sto telika char list kai oxi auto pou metrai san 4 xarakthres ta 0xXX special escape sequences.
                 if len(translatedTextAsCharsListToWriteWithZeroTerm) > 0x100: # to teliko keno yparxei hdh apo th makeStringIntoModifiedAsciiCharlistToBeWritten  0x00
                     # DEBUG
-                    #print "Line: %d. Error: Cannot have more than 255 chars in translated sentence for uitext.info file"  % rowi
+                    #print("Line: %d. Error: Cannot have more than 255 chars in translated sentence for uitext.info file"  % rowi)
                     errorsEncountered +=1
                     del translatedTextAsCharsListToWriteWithZeroTerm[:]
                 else:
@@ -2377,10 +2378,10 @@ class MyMainWindow(QtGui.QMainWindow):
                         translatedTextAsCharsListToWriteWithZeroTerm.append('\x20') # we have already appended a 0x00 in the makeStringIntoModifiedAsciiCharlistToBeWritten function
                     tmpOpenFile.seek(listOfUntranslatedLinesSpeechInfo[rowi][0])
                     tmpOpenFile.write("".join(translatedTextAsCharsListToWriteWithZeroTerm))
-##                    print "Line: %d. Translated text to write: %s" % (rowi, "".join(translatedTextAsCharsListToWriteWithZeroTerm))
+##                    print("Line: %d. Translated text to write: %s" % (rowi, "".join(translatedTextAsCharsListToWriteWithZeroTerm)))
 
             tmpOpenFile.close()
-#            print "Process Completed. Errors encountered %d." % errorsEncountered
+#            print("Process Completed. Errors encountered %d." % errorsEncountered)
             (savedFlag, mySessionName, myFullPathToOrigFile, myFullPathToTransFile, myGameID, myID, myOrigFileMD5, myTransFileMD5) = self.createAndSaveSession(fullPathsFilename, fullcopyFileName)
             self.exportPendingLines(myFullPathToTransFile, myTransFileMD5)
         #
@@ -2415,29 +2416,29 @@ class MyMainWindow(QtGui.QMainWindow):
                 # This is before saving!!!!
                 # The GUI should be updated too
                 ## DEBUG 4.7
-                #print "Comparing ranges of Book categories (711, 950)  and (1026-1265) in original file..."
+                #print("Comparing ranges of Book categories (711, 950)  and (1026-1265) in original file...")
                 nomatchCounterTmp = 0
                 totalEntriesInRange = 0 # could be derived from the subtraction
                 for lineFirst in range(710, 950):
-                    #print "Comparing %s" % (listOfEnglishLinesSpeechInfoOrig[lineFirst],)
-                    #print " with %s " % (listOfEnglishLinesSpeechInfoOrig[1025+(lineFirst-710)], )
-                    #print "(%d, %d)" % (lineFirst, 1025+(lineFirst-710) )
-                    if(listOfEnglishLinesSpeechInfoOrig[lineFirst] <> listOfEnglishLinesSpeechInfoOrig[1025+(lineFirst-710)]):
-                        print "NO MATCH"
+                    #print("Comparing %s" % (listOfEnglishLinesSpeechInfoOrig[lineFirst],))
+                    #print(" with %s " % (listOfEnglishLinesSpeechInfoOrig[1025+(lineFirst-710)], ))
+                    #print("(%d, %d)" % (lineFirst, 1025+(lineFirst-710) ))
+                    if(listOfEnglishLinesSpeechInfoOrig[lineFirst] != listOfEnglishLinesSpeechInfoOrig[1025+(lineFirst-710)]):
+                        print("NO MATCH")
                         nomatchCounterTmp +=1
                     totalEntriesInRange +=1
                 ## DEBUG 4.7
-                #print "Final Tally. Total: %d. Unmatched: %d." % (totalEntriesInRange,nomatchCounterTmp,)
+                #print("Final Tally. Total: %d. Unmatched: %d." % (totalEntriesInRange,nomatchCounterTmp,))
                 if(nomatchCounterTmp == 0):
                     ## DEBUG
-                    #print "Ranges were identical!"
+                    #print("Ranges were identical!")
                     nomatchCounterTmp = 0 # no-op
 
 
                 reply = msgBoxesStub.qMsgBoxQuestion(self.ui, 'Library Categories: Overwrite lines 1026-1265?', \
                             "The lines (711 to 950) and (1026-1265) contain identical values in the original file. Do you want to overwrite the translated values (lines 1026-1265) with the translated values from lines 711-950?", \
-                            QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-                if reply == QtGui.QMessageBox.Yes:
+                            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                if reply == QMessageBox.Yes:
                     specialFlag_frUiText_overwriteLibraryCategRanges = True
                 #
                 # Also ask about the classic file if not found (for library sorting)
@@ -2446,9 +2447,9 @@ class MyMainWindow(QtGui.QMainWindow):
                 if not os.access(enClassicMonkey2FullExpectedPath, os.F_OK) :
                     specialFlag_enClassicMonkey2FullExpectedPath_NotFound = True
                     reply = msgBoxesStub.qMsgBoxQuestion(self.ui, 'Unable to resort the library',
-                    "No classic file ({0}) was detected in the same folder with the {1} file. Do you want to proceed without resorting the library?".format(filenameEnClassicMonkey2001,filenameFrUIText), QtGui.QMessageBox.Yes |
-                    QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-                    if reply == QtGui.QMessageBox.No:
+                    "No classic file ({0}) was detected in the same folder with the {1} file. Do you want to proceed without resorting the library?".format(filenameEnClassicMonkey2001,filenameFrUIText), QMessageBox.Yes |
+                    QMessageBox.No, QMessageBox.No)
+                    if reply == QMessageBox.No:
                         # prompt to copy the original classic file to the right path
                         # and return.
                         msgBoxesStub.qMsgBoxInformation(self.ui,  "Information message", "Process Aborted by user request! Please place the original {0} classic file in the same path with the {1} file if you want to resort the library cards.".format(filenameEnClassicMonkey2001,filenameFrUIText))
@@ -2459,9 +2460,9 @@ class MyMainWindow(QtGui.QMainWindow):
                 else:
                     specialFlag_enClassicMonkey2FullExpectedPath_NotFound = False  # file was found!
                     reply = msgBoxesStub.qMsgBoxQuestion(self.ui, 'Resort the library option',
-                    "A classic file ({0}) was detected in the same folder with the {1} file. A resorted library copy can be created there. Do you want to resort the library?".format(filenameEnClassicMonkey2001,filenameFrUIText), QtGui.QMessageBox.Yes |
-                    QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
-                    if reply == QtGui.QMessageBox.No:
+                    "A classic file ({0}) was detected in the same folder with the {1} file. A resorted library copy can be created there. Do you want to resort the library?".format(filenameEnClassicMonkey2001,filenameFrUIText), QMessageBox.Yes |
+                    QMessageBox.No, QMessageBox.Yes)
+                    if reply == QMessageBox.No:
                         specialFlag_continueWithNoSortofLibraryClassic = True
                     else:
                         specialFlag_continueWithNoSortofLibraryClassic = False # for verbosity
@@ -2482,7 +2483,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 else:
                     index =  self.quoteTableView.model().index(rowi, 1, QModelIndex())
                 datoTmp = self.quoteTableView.model().data(index).toPyObject()
-                # print "Line: %d. Translated text: %s" % ( rowi, datoTmp)
+                # print("Line: %d. Translated text: %s" % ( rowi, datoTmp))
                 myASCIIString = unicode.encode("%s" % datoTmp, self.activeEnc)
                 translatedTextAsCharsListToWriteWithZeroTerm = self.makeStringIntoModifiedAsciiCharlistToBeWritten(myASCIIString, self.localGrabInstance)
                 # original length of foreign quote before (potentially having been edited)
@@ -2492,8 +2493,8 @@ class MyMainWindow(QtGui.QMainWindow):
                 deviationOffset = newLength - origLength
 
                 copyOFlistOfUntranslatedLinesSpeechInfo[rowi][1] = "".join(translatedTextAsCharsListToWriteWithZeroTerm)
-                if deviationOffset <> 0 :
-                    # print "ONE SUCH CASE offset = %d for row %d " % (deviationOffset,rowi)
+                if deviationOffset != 0 :
+                    # print("ONE SUCH CASE offset = %d for row %d " % (deviationOffset,rowi))
                     # fix the copyOFlistOfUntranslatedLinesSpeechInfo addresses
                     for myiter2 in range(0, len(copyOFlistOfUntranslatedLinesSpeechInfo)):
                         # [0] has the address in the file, [1] is the string and [2] is the length
@@ -2513,7 +2514,7 @@ class MyMainWindow(QtGui.QMainWindow):
             else:
                 tmpOpenFile.seek(beginAddrOfIndexMatrix)
             startpos = tmpOpenFile.tell()
-##            print "%X" % startpos
+##            print("%X" % startpos)
             tmpWord = tmpOpenFile.read(4)
             if tmpWord == "":
                 endOfFileReached = True
@@ -2593,7 +2594,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 # TODO: question for not proceeding should be placed earlier than here!
                 if not specialFlag_enClassicMonkey2FullExpectedPath_NotFound and not specialFlag_continueWithNoSortofLibraryClassic:
                     ## DEBUG 4.7
-                    # print "RE-SORTING LIBRARIE - arrrrr!"
+                    # print("RE-SORTING LIBRARIE - arrrrr!")
                     #
                     # classic file was found!!
                     #
@@ -2607,12 +2608,12 @@ class MyMainWindow(QtGui.QMainWindow):
                     locale.setlocale(locale.LC_ALL, '')
                     listWithUntransQuotesSorted = sorted(listWithUntransQuotes, cmp=locale.strcoll)
                     ## DEBUG 4.7
-                    #print listWithUntransQuotesSorted;
+                    #print(listWithUntransQuotesSorted;)
                     for tmpitit in range(0, len(listWithUntransQuotesSorted)):
                         tokensOfSortedQuote = unicode.rpartition(listWithUntransQuotesSorted[tmpitit], '__')
                         listWithNewIndexesOfQuotes.append(int(tokensOfSortedQuote[2]))
                     ## debug 4.7
-                    #print listWithNewIndexesOfQuotes # includes a 0 index, and goes up to 239
+                    #print(listWithNewIndexesOfQuotes # includes a 0 index, and goes up to 239)
 
 
 
@@ -2650,7 +2651,7 @@ class MyMainWindow(QtGui.QMainWindow):
                     for troglIdx in range(0,240):
                         listMapSEIndexToOrig[troglIdx] = listMapOrigIndexToSE.index(troglIdx)
                     ## DEBUG 4.7
-                    #print listMapSEIndexToOrig
+                    #print(listMapSEIndexToOrig)
 
                     #
                     # Due to changes in SE, the position o big whoop in SE (zero based is 187! - see above).id in original is 191 (zero based)
@@ -2679,19 +2680,19 @@ class MyMainWindow(QtGui.QMainWindow):
 ##                            if listWithNewIndexesOfQuotes[ikid] == origWhoopPosInSEZerobased:
 ##                                newWhoopPosInSEZeroBased = ikid
 ##                                break
-##                        print "New whoop Pos {0}".format(newWhoopPosInSEZeroBased)
+##                        print("New whoop Pos {0}".format(newWhoopPosInSEZeroBased))
 ##                        for ikid in range(0,len(listWithNewIndexesOfQuotes)):
 ##                            if listWithNewIndexesOfQuotes[ikid] == origPirateQuotsPosInSEZerobased:
 ##                                newPirateQuotsPosInSEZeroBased = ikid
 ##                                break
 ##
-##                        print "New pirate quotes Pos {0}".format(newPirateQuotsPosInSEZeroBased)
+##                        print("New pirate quotes Pos {0}".format(newPirateQuotsPosInSEZeroBased))
 ##                        for ikid in range(0,len(listWithNewIndexesOfQuotes)):
 ##                            if listWithNewIndexesOfQuotes[ikid] == origJoyOfHexPosInSEZerobased:
 ##                                newJoyOfHexPosInSEZeroBased = ikid
 ##                                break
 ##
-##                        print "New joy of Hex Pos {0}".format(newJoyOfHexPosInSEZeroBased)
+##                        print("New joy of Hex Pos {0}".format(newJoyOfHexPosInSEZeroBased))
                         ## END DEBUG
                         listWithNewIndexesOfQuotesRestoredWhoop = listWithNewIndexesOfQuotes[:]
                         listWithNewIndexesOfQuotesRestoredWhoop.remove(origWhoopPosInSEZerobased)
@@ -2709,7 +2710,7 @@ class MyMainWindow(QtGui.QMainWindow):
 
 
                     ## DEBUG 4.7
-                    #print listWithNewIndexesOfQuotesRestoredWhoop # includes a 0 index, and goes up to 239
+                    #print(listWithNewIndexesOfQuotesRestoredWhoop # includes a 0 index, and goes up to 239)
 
                     #
                     # continuing tmp snippet
@@ -2751,40 +2752,40 @@ class MyMainWindow(QtGui.QMainWindow):
                     tmpHeaderWord = self.myFileBuffRead(wholeDataClassicEnM2Giv, startAddrOfM2Class_SCRP_0063, 4)
 
                     if tmpHeaderWord == "":
-                        print "Debug: End of Classic File"
+                        print("Debug: End of Classic File")
                     else:
                         datumUnpacked = unpack('>L', tmpHeaderWord)  # little endianess - read with the order given
                         datumHex = datumUnpacked[0]
                         datumHexUnCode = datumHex ^ 0x69696969
                         ## DEBUG 4.7
-                        #print "datumHexUnCode is {0}".format(datumHexUnCode)
-                        #print "datumHexCode (hex): %X" % datumHex
-                        #print "datumHexUnCode (hex): %08X" % datumHexUnCode
+                        #print("datumHexUnCode is {0}".format(datumHexUnCode))
+                        #print("datumHexCode (hex): %X" % datumHex)
+                        #print("datumHexUnCode (hex): %08X" % datumHexUnCode)
                     ## Length (4 bytes, big endian)
                     scrp063Length = 0
                     tmpLengthWord = ""
                     tmpLengthWord = self.myFileBuffRead(wholeDataClassicEnM2Giv, startAddrOfM2Class_SCRP_0063+4, 4)
 
                     if tmpLengthWord == "":
-                        print "Debug: End of Classic File"
+                        print("Debug: End of Classic File")
                     else:
                         datumUnpacked = unpack('>L', tmpLengthWord)  # little endianess - read with the order given
                         datumHex = datumUnpacked[0]
                         datumHexUnCode = datumHex ^ 0x69696969
                         scrp063Length = datumHexUnCode
                         ## DEBUG 4.7
-                        #print "Size is {0}".format(datumHexUnCode)
+                        #print("Size is {0}".format(datumHexUnCode))
                     #
                     #
                     # decode classic file in buffer
                     wholeDataClassic_SCRP_0063 = self.scummDecodeIndexFile(wholeDataClassicEnM2Giv, startAddrOfM2Class_SCRP_0063, scrp063Length)
 
                     ## DEBUG
-                    ##print "Decoding complete"  # print first 32 decoded chars
+                    ##print("Decoding complete"  # print first 32 decoded chars)
                     ##for yiyi in wholeDataClassic_SCRP_0063[0:32]:
                     ##    datumUnpacked = unpack('B', yiyi)  # little endianess - read with the order given
                     ##    datumHex = datumUnpacked[0]
-                    ##    print "datumHexUnCode (hex): %02X" % datumHex
+                    ##    print("datumHexUnCode (hex): %02X" % datumHex)
                     ## END OF DEBUG
 
                     #
@@ -2808,29 +2809,29 @@ class MyMainWindow(QtGui.QMainWindow):
                     tmpHeaderWord = self.myFileBuffRead(wholeDataClassicEnM2Giv, startAddrOfM2Class_SCRP_0064, 4)
 
                     if tmpHeaderWord == "":
-                        print "Debug: End of Classic File"
+                        print("Debug: End of Classic File")
                     else:
                         datumUnpacked = unpack('>L', tmpHeaderWord)  # little endianess - read with the order given
                         datumHex = datumUnpacked[0]
                         datumHexUnCode = datumHex ^ 0x69696969
                         ## DEBUG 4.7
-                        #print "datumHexUnCode is {0}".format(datumHexUnCode)
-                        #print "datumHexCode (hex): %X" % datumHex
-                        #print "datumHexUnCode (hex): %08X" % datumHexUnCode
+                        #print("datumHexUnCode is {0}".format(datumHexUnCode))
+                        #print("datumHexCode (hex): %X" % datumHex)
+                        #print("datumHexUnCode (hex): %08X" % datumHexUnCode)
                     ## Length (4 bytes, big endian)
                     scrp064Length = 0
                     tmpLengthWord = ""
                     tmpLengthWord = self.myFileBuffRead(wholeDataClassicEnM2Giv, startAddrOfM2Class_SCRP_0064+4, 4)
 
                     if tmpLengthWord == "":
-                        print "Debug: End of Classic File"
+                        print("Debug: End of Classic File")
                     else:
                         datumUnpacked = unpack('>L', tmpLengthWord)  # little endianess - read with the order given
                         datumHex = datumUnpacked[0]
                         datumHexUnCode = datumHex ^ 0x69696969
                         scrp064Length = datumHexUnCode
                         ## DEBUG 4.7
-                        #print "Size is {0}".format(datumHexUnCode)
+                        #print("Size is {0}".format(datumHexUnCode))
                     #
                     #
                     # decode classic file in buffer
@@ -2847,29 +2848,29 @@ class MyMainWindow(QtGui.QMainWindow):
                     tmpHeaderWord = self.myFileBuffRead(wholeDataClassicEnM2Giv, startAddrOfM2Class_LSCR_0207, 4)
 
                     if tmpHeaderWord == "":
-                        print "Debug: End of Classic File"
+                        print("Debug: End of Classic File")
                     else:
                         datumUnpacked = unpack('>L', tmpHeaderWord)  # little endianess - read with the order given
                         datumHex = datumUnpacked[0]
                         datumHexUnCode = datumHex ^ 0x69696969
-                        #print "datumHexUnCode is {0}".format(datumHexUnCode)
-                        #print "datumHexCode (hex): %X" % datumHex
+                        #print("datumHexUnCode is {0}".format(datumHexUnCode))
+                        #print("datumHexCode (hex): %X" % datumHex)
                         ## DEBUG 4.7
-                        #print "datumHexUnCode (hex): %08X" % datumHexUnCode
+                        #print("datumHexUnCode (hex): %08X" % datumHexUnCode)
                     ## Length (4 bytes, big endian)
                     lscr0207Length = 0
                     tmpLengthWord = ""
                     tmpLengthWord = self.myFileBuffRead(wholeDataClassicEnM2Giv, startAddrOfM2Class_LSCR_0207+4, 4)
 
                     if tmpLengthWord == "":
-                        print "Debug: End of Classic File"
+                        print("Debug: End of Classic File")
                     else:
                         datumUnpacked = unpack('>L', tmpLengthWord)  # little endianess - read with the order given
                         datumHex = datumUnpacked[0]
                         datumHexUnCode = datumHex ^ 0x69696969
                         lscr0207Length = datumHexUnCode
                         ## DEBUG 4.7
-                        #print "Size is {0}".format(datumHexUnCode)
+                        #print("Size is {0}".format(datumHexUnCode))
                     #
                     #
                     # decode classic file in buffer
@@ -2887,51 +2888,51 @@ class MyMainWindow(QtGui.QMainWindow):
                         newIndex = bizit+1
                         indexOfOrigToBeReplacedZB = listMapSEIndexToOrig[listWithNewIndexesOfQuotesRestoredWhoop[bizit]]
                         (oldindex, indx_addres) = listIndexToAddresses_0063[indexOfOrigToBeReplacedZB]
-                        #print "bizzit == {0}. indexOfOrigToBeReplacedZB == {1}".format(bizit, indexOfOrigToBeReplacedZB)
+                        #print("bizzit == {0}. indexOfOrigToBeReplacedZB == {1}".format(bizit, indexOfOrigToBeReplacedZB))
                         ## DEBUG 4.7 - big whoop and pirate quotes and joy of hex
 ##                        if indexOfOrigToBeReplacedZB == 191: # big whoop id (zero based)
-##                            print "Old big whoop id -zb-: {0}, new big whoop id -zb- {1}".format(indexOfOrigToBeReplacedZB, newIndex-1)
+##                            print("Old big whoop id -zb-: {0}, new big whoop id -zb- {1}".format(indexOfOrigToBeReplacedZB, newIndex-1))
 ##                            if indexOfOrigToBeReplacedZB == newIndex-1:
-##                                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-##                                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-##                                print " WHOOP IS SAME"
-##                                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-##                                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+##                                print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+##                                print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+##                                print(" WHOOP IS SAME")
+##                                print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+##                                print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 ##                            else:
-##                                print "***************************************************"
-##                                print "..................................................."
-##                                print " WHOOP IS DIFFERENT"
-##                                print "..................................................."
-##                                print "***************************************************"
+##                                print("***************************************************")
+##                                print("...................................................")
+##                                print(" WHOOP IS DIFFERENT")
+##                                print("...................................................")
+##                                print("***************************************************")
 ##
 ##                        if indexOfOrigToBeReplacedZB == 146: # pirate quotes id (zero based)
-##                            print "Old pirate quotes id -zb-: {0}, new pirate quotes id -zb- {1}".format(indexOfOrigToBeReplacedZB, newIndex-1)
+##                            print("Old pirate quotes id -zb-: {0}, new pirate quotes id -zb- {1}".format(indexOfOrigToBeReplacedZB, newIndex-1))
 ##                            if indexOfOrigToBeReplacedZB == newIndex-1:
-##                                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-##                                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-##                                print " PIRATE QUOTES IS SAME"
-##                                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-##                                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+##                                print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+##                                print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+##                                print(" PIRATE QUOTES IS SAME")
+##                                print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+##                                print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 ##                            else:
-##                                print "***************************************************"
-##                                print "..................................................."
-##                                print " PIRATE QUOTES IS DIFFERENT"
-##                                print "..................................................."
-##                                print "***************************************************"
+##                                print("***************************************************")
+##                                print("...................................................")
+##                                print(" PIRATE QUOTES IS DIFFERENT")
+##                                print("...................................................")
+##                                print("***************************************************")
 ##                        if indexOfOrigToBeReplacedZB == 149: # Joy of HEX id (zero based)
-##                            print "Old pirate quotes id -zb-: {0}, new pirate quotes id -zb- {1}".format(indexOfOrigToBeReplacedZB, newIndex-1)
+##                            print("Old pirate quotes id -zb-: {0}, new pirate quotes id -zb- {1}".format(indexOfOrigToBeReplacedZB, newIndex-1))
 ##                            if indexOfOrigToBeReplacedZB == newIndex-1:
-##                                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-##                                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-##                                print " Joy of HEX IS SAME"
-##                                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-##                                print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+##                                print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+##                                print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+##                                print(" Joy of HEX IS SAME")
+##                                print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+##                                print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 ##                            else:
-##                                print "***************************************************"
-##                                print "..................................................."
-##                                print " Joy of HEX IS DIFFERENT"
-##                                print "..................................................."
-##                                print "***************************************************"
+##                                print("***************************************************")
+##                                print("...................................................")
+##                                print(" Joy of HEX IS DIFFERENT")
+##                                print("...................................................")
+##                                print("***************************************************")
                         ## END OF DEBUG 4.7
                         listIndexToAddresses_0063[indexOfOrigToBeReplacedZB] = (newIndex, indx_addres)
                         self.myFileBuffWriteShort(wholeDataClassic_SCRP_0063,indx_addres, pack('<H', newIndex))
@@ -2960,9 +2961,9 @@ class MyMainWindow(QtGui.QMainWindow):
                     specialFlag_LIBRARY_WAS_RESORTED = True # set the flag, for adding info in the final report.
 
                     ## DEBUG 4.7
-                    #print listIndexToAddresses_0063
-                    #print listIndexToAddresses_0064
-                    #print listIndexToAddresses_0207
+                    #print(listIndexToAddresses_0063)
+                    #print(listIndexToAddresses_0064)
+                    #print(listIndexToAddresses_0207)
 ##                    self.parseDecodedFileBuffer(wholeDataClassic_SCRP_0063[:], 'SCRP_0063')
 ##                    self.parseDecodedFileBuffer(wholeDataClassic_SCRP_0064[:], 'SCRP_0064')
 ##                    self.parseDecodedFileBuffer(wholeDataClassic_LSCR_0207[:], 'LSCR_0207')
@@ -3086,7 +3087,7 @@ class MyMainWindow(QtGui.QMainWindow):
 
     def searchModeToggled(self, stateChecked):
         if(stateChecked):
-            ##print "search Mode enabled", self.ui.searchModeRB.isChecked()
+            ##print("search Mode enabled", self.ui.searchModeRB.isChecked())
             self.ui.replaceAllInQuotesBtn.hide()
             self.ui.replaceInQuotesBtn.hide()
             self.ui.replaceWithStrTxtBx.hide()
@@ -3099,7 +3100,7 @@ class MyMainWindow(QtGui.QMainWindow):
         self.ui.OriginalOrTransCmbBx.setCurrentIndex(1)
 
         if(stateChecked):
-            ##print "replace Mode enabled", self.ui.replaceModeRB.isChecked()
+            ##print("replace Mode enabled", self.ui.replaceModeRB.isChecked())
             self.ui.replaceAllInQuotesBtn.show()
             self.ui.replaceInQuotesBtn.show()
             self.ui.replaceWithStrTxtBx.show()
@@ -3112,7 +3113,7 @@ class MyMainWindow(QtGui.QMainWindow):
         self.ui.OriginalOrTransCmbBx.setCurrentIndex(1)
 
         if(stateChecked):
-            ##print "replace Mode enabled", self.ui.replaceModeRB.isChecked()
+            ##print("replace Mode enabled", self.ui.replaceModeRB.isChecked())
             self.ui.replaceAllInQuotesBtn.show()
             self.ui.replaceInQuotesBtn.show()
             self.ui.replaceWithStrTxtBx.show()
@@ -3160,7 +3161,7 @@ class MyMainWindow(QtGui.QMainWindow):
 
 
     def replaceMatches(self, pReplaceAllMode = False):
-        ##print "replaceOnceMatch clicked"
+        ##print("replaceOnceMatch clicked")
         totalMatchesOverall = 0 # over whole column
         firstMatchingRow = -1 #init dummy value (for cycle detection)
         countMatches = True
@@ -3172,7 +3173,7 @@ class MyMainWindow(QtGui.QMainWindow):
         replaceAllMode = pReplaceAllMode
 
         # moved early column detection here:
-        if self.ui.OriginalOrTransCmbBx.currentText() <> "Original Text":
+        if self.ui.OriginalOrTransCmbBx.currentText() != "Original Text":
                  searchInColumnNumber = 1
         if searchInColumnNumber != 1:
             msgBoxesStub.qMsgBoxInformation(self.ui,  "Replace mode", "Replace mode is not supported for the original text column. Try the translation column.")
@@ -3190,7 +3191,7 @@ class MyMainWindow(QtGui.QMainWindow):
             if reply == QMessageBox.No:
                 self.replaceModeIsOngoing = False
                 self.resetReplaceSearch()
-                #print "abort replace all"
+                #print("abort replace all")
                 return
 
         self.replaceModeIsOngoing = True
@@ -3204,7 +3205,7 @@ class MyMainWindow(QtGui.QMainWindow):
         while(self.replaceModeIsOngoing):
             foundMatch = False
             foundMatch, numOfMatchesInCell, foundColNum, foundRowNum, errStat, wrapWasDone = self.findNextMatchingStrLineInTable(pFindSpecialLinesMode=None, pSearchDirection=None, pWrapAround=None, pMatchCase = None, pSearchMode = mySearchMode)
-            ##print wrapWasDone
+            ##print(wrapWasDone)
             if wrapWasDone:
                 if (persistedWrapDone):
                     persistedWrapBeforeResettingPreviousOne = True
@@ -3217,7 +3218,7 @@ class MyMainWindow(QtGui.QMainWindow):
                     mySearchMode = "replaceAll"
                 firstMatchingRow = foundRowNum
                 persistedWrapDone = False #if wrap was done before a match we should ignore it
-            elif errStat <> -3 and foundRowNum != -1 and \
+            elif errStat != -3 and foundRowNum != -1 and \
                     ((persistedWrapDone and ( ( foundRowNum >= firstMatchingRow and searchDownwards) or (foundRowNum <= firstMatchingRow and not searchDownwards) )) or \
                     (persistedWrapBeforeResettingPreviousOne)) : #full circle search. Prompt for continue?
                 if countMatches:
@@ -3226,7 +3227,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 goAheadAndEnd = False
                 if not replaceAllMode:
                     circleReply = msgBoxesStub.qMsgBoxQuestion(self.ui,  "Replace mode", "You reached the beginning of the search. Continue?")
-                    if circleReply == QtGui.QMessageBox.Yes:
+                    if circleReply == QMessageBox.Yes:
                         persistedWrapDone = False
                         persistedWrapBeforeResettingPreviousOne = False
                         firstMatchingRow = foundRowNum
@@ -3264,11 +3265,11 @@ class MyMainWindow(QtGui.QMainWindow):
                         goAheadReplace = True
                     elif msgBox.clickedButton() == noReplaceButton:
                         # skip
-                        #print "Skip replace"
+                        #print("Skip replace")
                         pass
                     elif msgBox.clickedButton() == stopButton: #also catches click on the [X] of dialogue
                         # Stop
-                        #print "Stop replace"
+                        #print("Stop replace")
                         self.replaceModeIsOngoing = False
                         self.resetReplaceSearch()
                         # TODO: show report if any replaces were made!
@@ -3276,7 +3277,7 @@ class MyMainWindow(QtGui.QMainWindow):
                             self.showReplaceReportLog(totalMatchesOverall, totalMatches, totalReplaces)
                     elif msgBox.clickedButton() == replaceAllButton:
                         # "Replace All"
-                        #print "Replace all"
+                        #print("Replace all")
                         replaceAllMode = True
                         mySearchMode = "replaceAll"
                         goAheadReplace = True
@@ -3287,7 +3288,7 @@ class MyMainWindow(QtGui.QMainWindow):
                         #    self.showReplaceReportLog(totalMatchesOverall, totalMatches, totalReplaces)
                         #pass
                     else:
-                        #print "something else happened"
+                        #print("something else happened")
                         self.replaceModeIsOngoing = False
                         self.resetReplaceSearch()
                 else:
@@ -3314,12 +3315,12 @@ class MyMainWindow(QtGui.QMainWindow):
 
                     # increase count
                     totalReplaces += numOfMatchesInCell
-                    #print "Replace and continue"
+                    #print("Replace and continue")
                     pass
 
-                #print "reply: ", reply
+                #print("reply: ", reply)
             else:
-                #print "SET FALSE"
+                #print("SET FALSE")
                 self.replaceModeIsOngoing = False
                 self.resetReplaceSearch()
                 # TODO: show report if any replaces were made!
@@ -3328,7 +3329,7 @@ class MyMainWindow(QtGui.QMainWindow):
         return
 
     def replaceAllMatchClickedButton(self, checked):
-        ##print "replaceAllMatch clicked"
+        ##print("replaceAllMatch clicked")
         self.replaceMatches(True)
         return
 
@@ -3337,7 +3338,7 @@ class MyMainWindow(QtGui.QMainWindow):
         index =  self.quoteTableView.model().index(cellIndexRow, cellIndexColumn, QModelIndex())
         datoTmp = self.quoteTableView.model().data(index).toPyObject()
         newText = re.sub(compiledPattern, replacementStr, datoTmp)
-        #print "newText: ", newText
+        #print("newText: ", newText)
         # set the text back in the cell!
         self.quoteTableView.model().setData(index, newText, Qt.EditRole)
         return
@@ -3420,17 +3421,17 @@ class MyMainWindow(QtGui.QMainWindow):
             foundMatch = False
             foundMatch, numOfMatchesInCell, foundColNum, foundRowNum, errStat, wrapWasDone  = self.findNextMatchingStrLineInTable(pFindSpecialLinesMode=None, pSearchDirection="down", pWrapAround=False, pMatchCase = None, pSearchMode = "earlyScan", pEarlyScanLastRowFound = earlyScanLastRowFound)
             if countMatches and numOfMatchesInCell > 0:
-                if(resDict is not None and not resDict.has_key(foundRowNum)):
+                if(resDict is not None and foundRowNum not in resDict):
                     resDict[foundRowNum] = numOfMatchesInCell
                 earlyScanLastRowFound = foundRowNum
                 totalMatches += numOfMatchesInCell
-                ##print "totalMatches: %d row: %d" % ( totalMatches, foundRowNum + 1)
+                ##print("totalMatches: %d row: %d" % ( totalMatches, foundRowNum + 1))
             if firstMatchingRow == -1  and foundRowNum > -1:
                 firstMatchingRow = foundRowNum
-            elif errStat <> -3 and foundRowNum != -1 and foundRowNum == firstMatchingRow: #full circle search. Prompt for continue?
+            elif errStat != -3 and foundRowNum != -1 and foundRowNum == firstMatchingRow: #full circle search. Prompt for continue?
                 if countMatches:
                     totalMatches -= numOfMatchesInCell # reduct the added matches after cycle.
-                    ##print "totalMatches: %d row: %d" % ( totalMatches, foundRowNum)
+                    ##print("totalMatches: %d row: %d" % ( totalMatches, foundRowNum))
                 countMatches = False    # don't add to total after a circle has been reached
                 earlyScanMode = False
             if foundMatch == False:
@@ -3460,24 +3461,24 @@ class MyMainWindow(QtGui.QMainWindow):
         search_wrap = True
         match_case = False
         wrapWasDone = False
-        if pSearchDirection <> None:
+        if pSearchDirection != None:
             search_direction = pSearchDirection
         elif self.ui.findSearchUpChBx.isChecked() == True:
             search_direction = "up"
-        if pWrapAround <> None:
+        if pWrapAround != None:
             search_wrap = pWrapAround
         elif self.ui.findWrapAroundChBx.isChecked()== False:
             search_wrap = False
         if pSearchMode == "replaceAll": #special override case
             search_wrap = True
 
-        if pMatchCase <> None:
+        if pMatchCase != None:
             match_case = pMatchCase
         elif self.ui.findMatchCaseChBx.isChecked()== True:
             match_case = True
 
         myAdvRegExpReplaceFlag = False
-        if pAdvRegExpMode <> None:
+        if pAdvRegExpMode != None:
             myAdvRegExpReplaceFlag = pAdvRegExpMode
         elif(self.ui.replaceRegExModeRB.isChecked()):
             myAdvRegExpReplaceFlag = True
@@ -3498,14 +3499,14 @@ class MyMainWindow(QtGui.QMainWindow):
         keySearchStr = ""
         if pFindSpecialLinesMode == None:
             keySearchStr = self.ui.findStrTxtBx.text().strip()
-            #print "keySearchStr"+ keySearchStr
+            #print("keySearchStr"+ keySearchStr)
             if keySearchStr == "" or plithosOfQuotes==0:
                 self.resetFindReplaceSearch()
                 errstat = -1
                 return False, retNumOfMatchesInCell, retColNum, retRowNum, errstat, wrapWasDone
 
             if len(keySearchStr) < 2:
-                if pSearchMode <> "earlyScan":
+                if pSearchMode != "earlyScan":
                     reply = msgBoxesStub.qMsgBoxInformation(self.ui,  "Information message", "Cannot allow string search with less than 2 characters!")
                 errstat = -2
                 return False, retNumOfMatchesInCell, retColNum, retRowNum, errstat, wrapWasDone
@@ -3513,7 +3514,7 @@ class MyMainWindow(QtGui.QMainWindow):
             # after validity checks, we set the member var to remember the last valid search
             self.currentSearchKeyword = keySearchStr
 
-            if self.ui.OriginalOrTransCmbBx.currentText() <> "Original Text":
+            if self.ui.OriginalOrTransCmbBx.currentText() != "Original Text":
                  searchInColumnNumber = 1
             if (pSearchMode == "replace" or pSearchMode == "replaceFirst" or pSearchMode == "replaceAll") and searchInColumnNumber != 1:
                 errstat = -3
@@ -3549,7 +3550,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 startRowOfSearch = startRowOfSearchIndex.row()
                 if startRowOfSearch < 0:
                     startRowOfSearch = 0
-                #print startRowOfSearch
+                #print(startRowOfSearch)
             elif (startRowOfSearchIndex is None):
                 startRowOfSearch = 0
 
@@ -3563,7 +3564,7 @@ class MyMainWindow(QtGui.QMainWindow):
 ##        for rowi in range(startRowOfSearch,plithosOfQuotes):
 ##            index =  self.quoteTableView.model().index(rowi, searchInColumnNumber, QModelIndex())
 ##            datoTmp = self.quoteTableView.model().data(index).toPyObject()
-##            if(re.search(keySearchStr, datoTmp)) <> None:
+##            if(re.search(keySearchStr, datoTmp)) != None:
 ##                self.quoteTableView.selectionModel().select(index, QItemSelectionModel.ClearAndSelect)
 ##                self.quoteTableView.setCurrentIndex(index)
 ##                self.quoteTableView.setFocus()
@@ -3578,22 +3579,22 @@ class MyMainWindow(QtGui.QMainWindow):
             if search_wrap == True  and ( (search_direction == "down"  and startRowOfSearch > 0  ) or (search_direction == "up" and startRowOfSearch < plithosOfQuotes -1 ) ):
                 wrapWasDone = True
                 weHadAMatch, retNumOfMatchesInCell, retColNum, retRowNum  = self.matchKeyWord(pFindSpecialLinesMode, keySearchStr, wrap_start, startRowOfSearch, searchInColumnNumber, search_direction, match_case, pSearchMode, myAdvRegExpReplaceFlag)
-        # if still is false then print message!
+        # if still is false then print(message!)
         if search_wrap == True and weHadAMatch == False:
-            if pSearchMode <> "earlyScan" and pSearchMode <> "replaceAll":
+            if pSearchMode != "earlyScan" and pSearchMode != "replaceAll":
                 reply = msgBoxesStub.qMsgBoxInformation(self.ui,  "Information message", "No matches were found!")
             errstat = -4
         elif search_wrap == False and weHadAMatch == False and search_direction == "up" and startRowOfSearch == plithosOfQuotes -1:
-            if pSearchMode <> "earlyScan" and pSearchMode <> "replaceAll":
+            if pSearchMode != "earlyScan" and pSearchMode != "replaceAll":
                 reply = msgBoxesStub.qMsgBoxInformation(self.ui,  "Information message", "No matches were found!")
             errstat = -4
         elif search_wrap == False and weHadAMatch == False and search_direction == "down" and startRowOfSearch == 0:
-            if pSearchMode <> "earlyScan" and pSearchMode <> "replaceAll":
+            if pSearchMode != "earlyScan" and pSearchMode != "replaceAll":
                 reply = msgBoxesStub.qMsgBoxInformation(self.ui,  "Information message", "No matches were found!")
             errstat = -4
-        elif pSearchMode <> "earlyScan" and search_wrap == False and weHadAMatch == False and ( (search_direction == "down" and startRowOfSearch > 0) or (search_direction == "up" and startRowOfSearch < plithosOfQuotes -1) ) :
-            reply = msgBoxesStub.qMsgBoxQuestion(self.ui, "Information message", "End of file reached. No matches were found! Do you want to continue search from the beginning of the file?", QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
-            if reply == QtGui.QMessageBox.Yes:
+        elif pSearchMode != "earlyScan" and search_wrap == False and weHadAMatch == False and ( (search_direction == "down" and startRowOfSearch > 0) or (search_direction == "up" and startRowOfSearch < plithosOfQuotes -1) ) :
+            reply = msgBoxesStub.qMsgBoxQuestion(self.ui, "Information message", "End of file reached. No matches were found! Do you want to continue search from the beginning of the file?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+            if reply == QMessageBox.Yes:
                 wrapWasDone = True
                 weHadAMatch, retNumOfMatchesInCell, retColNum, retRowNum  = self.matchKeyWord(pFindSpecialLinesMode, keySearchStr, wrap_start, startRowOfSearch, searchInColumnNumber, search_direction, match_case, pSearchMode, myAdvRegExpReplaceFlag)
                 if weHadAMatch == False:
@@ -3608,9 +3609,9 @@ class MyMainWindow(QtGui.QMainWindow):
 #
 #
     def matchKeyWord(self, pFindSpecialLinesMode, keyStr, fromRow, untilButWithoutRow, columnNumber, search_direction, match_caseFlg, pSearchMode = "search", pAdvRegExpMode = False):
-        #print keyStr
-        #print pFindSpecialLinesMode == None
-        #print search_direction
+        #print(keyStr)
+        #print(pFindSpecialLinesMode == None)
+        #print(search_direction)
         keyStrCompiledPtrn = None
         retBool = False
         retNumOfMatchesInCell = 0
@@ -3655,26 +3656,26 @@ class MyMainWindow(QtGui.QMainWindow):
             replaceKeyFormat  = QtGui.QTextCharFormat()
             replaceKeyFormat.setBackground(QtCore.Qt.blue)
             replaceKeyFormat.setForeground(QtCore.Qt.white)
-#        print "%s" % keyStr
+#        print("%s" % keyStr)
         for rowi in searchRange:
             index =  self.quoteTableView.model().index(rowi, columnNumber, QModelIndex())
             datoTmp = self.quoteTableView.model().data(index).toPyObject()
             if pFindSpecialLinesMode == None:
                 #matchesList = re.findall(keyStr, datoTmp, flags=myReFlags)
-                #print "keyst, keySTrPatt, datoTmp", keyStr, keyStrCompiledPtrn ,datoTmp
+                #print("keyst, keySTrPatt, datoTmp", keyStr, keyStrCompiledPtrn ,datoTmp)
                 #matchesList = None
 ##                if datoTmp is None:
-##                    print "colnum, rowi, keyStr" , columnNumber, rowi, keyStr
+##                    print("colnum, rowi, keyStr" , columnNumber, rowi, keyStr)
                 matchesList = keyStrCompiledPtrn.findall(datoTmp)
-                if(matchesList) <> None and len(matchesList) > 0:
-                    if pSearchMode <> "earlyScan":
+                if(matchesList) != None and len(matchesList) > 0:
+                    if pSearchMode != "earlyScan":
                         self.quoteTableView.selectionModel().select(index, QItemSelectionModel.ClearAndSelect)
                         self.quoteTableView.setCurrentIndex(index)
                         self.quoteTableView.setFocus()
                     retNumOfMatchesInCell = len(matchesList)
                     retColNum = index.column()
                     retRowNum = index.row()
-                    ##print "Match. Row: ", index.row()
+                    ##print("Match. Row: ", index.row())
                     retBool = True
                     if (pSearchMode == "replace" or pSearchMode == "replaceFirst" or pSearchMode == "replaceAll"):
                         #highlightRulesGlobal.setReplaceHighlightRule(keyStr, replaceKeyFormat, match_caseFlg, retColNum, retRowNum)
@@ -3683,7 +3684,7 @@ class MyMainWindow(QtGui.QMainWindow):
             elif pFindSpecialLinesMode == "marked" or  pFindSpecialLinesMode == "conflicted" or pFindSpecialLinesMode == "changed":
                 if datoTmp == True:
                     indexToSelect = self.quoteTableView.model().index(rowi, 1, QModelIndex())
-                    if pSearchMode <> "earlyScan":
+                    if pSearchMode != "earlyScan":
                         self.quoteTableView.selectionModel().select(indexToSelect, QItemSelectionModel.ClearAndSelect)
                         self.quoteTableView.setCurrentIndex(indexToSelect)
                         self.quoteTableView.setFocus()
@@ -3698,7 +3699,7 @@ class MyMainWindow(QtGui.QMainWindow):
             elif pFindSpecialLinesMode == "unchanged":
                 if datoTmp == False:
                     indexToSelect = self.quoteTableView.model().index(rowi, 1, QModelIndex())
-                    if pSearchMode <> "earlyScan":
+                    if pSearchMode != "earlyScan":
                         self.quoteTableView.selectionModel().select(indexToSelect, QItemSelectionModel.ClearAndSelect)
                         self.quoteTableView.setCurrentIndex(indexToSelect)
                         self.quoteTableView.setFocus()
@@ -3777,12 +3778,12 @@ class MyMainWindow(QtGui.QMainWindow):
 
         # epistrofi sth routina pou bazei tous pragmatika special xarakthres pali sto string
         if atLeastOneSpecialCharWasDetected:
-    #        print "listOfSpecialChars %s" % listOfSpecialChars
-    #        print "listOfpos %s" % posOfSpecialChars
+    #        print("listOfSpecialChars %s" % listOfSpecialChars)
+    #        print("listOfpos %s" % posOfSpecialChars)
     #            remadeCharList = list(remadeQuoteString)
             for littleI in range(0, len(posOfSpecialChars)):
                 translatedTextAsCharsList2[posOfSpecialChars[littleI]] = listOfSpecialChars[littleI]
-    #        print "remadeCharList %s" % remadeCharList
+    #        print("remadeCharList %s" % remadeCharList)
     #            translatedTextAsCharsList2 = remadeCharList
         translatedTextAsCharsList2.append('\x00')
         return translatedTextAsCharsList2
@@ -3797,7 +3798,7 @@ class MyMainWindow(QtGui.QMainWindow):
     #
     def makeStringInReadableExtAsciiCharlistToBeListed(self, inputCharlist, GrabberForTranslationDicts):
         local_rev_replaceAsciiIndexWithValForTranslation = GrabberForTranslationDicts.rev_replaceAsciiIndexWithValForTranslation_FOR_DIALOGUE_FILE.copy()
-        ##print local_rev_replaceAsciiIndexWithValForTranslation
+        ##print(local_rev_replaceAsciiIndexWithValForTranslation)
         translatedTextAsCharsList2 = inputCharlist
         lgntOList = len(translatedTextAsCharsList2)
         itmp = 0
@@ -3907,12 +3908,12 @@ class MyMainWindow(QtGui.QMainWindow):
             remadeQuoteString = remadeQuoteString[:aMatchObj.start()] + "_" + remadeQuoteString[aMatchObj.end():]  # _ is a place holder and will be replaced in the Remade charList!
 
         if atLeastOneSpecialCharWasDetected:
-    #        print "listOfSpecialChars %s" % listOfSpecialChars
-    #        print "listOfpos %s" % posOfSpecialChars
+    #        print("listOfSpecialChars %s" % listOfSpecialChars)
+    #        print("listOfpos %s" % posOfSpecialChars)
             remadeCharList = list(remadeQuoteString)
             for littleI in range(0, len(posOfSpecialChars)):
                 remadeCharList[posOfSpecialChars[littleI]] = listOfSpecialChars[littleI]
-    #        print "remadeCharList %s" % remadeCharList
+    #        print("remadeCharList %s" % remadeCharList)
         return remadeCharList
 
 
@@ -3937,9 +3938,9 @@ class MyMainWindow(QtGui.QMainWindow):
         while not candidateFullCopyValid:
             appendixIndex += 1
             candidateFullcopyFileName= os.path.join( pathTosFile ,  sFilenameParts[0] + u'_' + ("%04d" % (appendixIndex)) + sFilenameParts[1] + sFilenameParts[2])
-##            print repr(candidateFullcopyFileName)
-##            print repr(originalfullPathsFilename)
-##            print repr(sFilename)
+##            print(repr(candidateFullcopyFileName))
+##            print(repr(originalfullPathsFilename))
+##            print(repr(sFilename))
             if not os.access(candidateFullcopyFileName, os.F_OK) :
                 shutil.copyfile(originalfullPathsFilename, candidateFullcopyFileName)
                 candidateFullCopyValid = True
@@ -3991,7 +3992,7 @@ class MyMainWindow(QtGui.QMainWindow):
         if not os.access(self.DBFileNameAndRelPath, os.F_OK) :
             foundSessionErrors = True
             # TODO: debug and error message. Show in message box and quit?
-#            print "CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath)
+#            print("CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath))
         else:
             # TODO: DB initialization (Should happen once, not every time!)
             conn = sqlite3.connect(self.DBFileNameAndRelPath)
@@ -4001,7 +4002,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 if not os.access(pOriginalfullPathsFilename, os.F_OK) :
                     foundSessionErrors = True
                     #TODO: debug and error message. Show in message box and quit?
-                    #print "CRITICAL ERROR: The original file %s could not be found on the disk!!" % (pOriginalfullPathsFilename)
+                    #print("CRITICAL ERROR: The original file %s could not be found on the disk!!" % (pOriginalfullPathsFilename))
                 else:
                     origFileMD5 = self.md5_for_file(pOriginalfullPathsFilename)
                     # todo: the search here is strict. we could relax it after a warning (that e.g. the original file was found in a session but not with the same MD5, do you want to continue loading that session?)
@@ -4013,7 +4014,7 @@ class MyMainWindow(QtGui.QMainWindow):
                             """translationSessions WHERE sessionName = ?""" , (pSessionName, ))
             else:
                 #TODO: debug and error message. Show in message box or SessionsErors and quit?
-                #print "CRITICAL ERROR: The loadASession method cannot have both of its parameters null!"
+                #print("CRITICAL ERROR: The loadASession method cannot have both of its parameters null!")
                 foundSessionErrors = True
             if (not foundSessionErrors):
                 row = c.fetchone()
@@ -4030,26 +4031,26 @@ class MyMainWindow(QtGui.QMainWindow):
                     if not os.access(myFullPathToOrigFile, os.F_OK) :
                         foundSessionErrors = True
                         #TODO: debug and error message. Show in message box or SessionsErors and quit?
-                        #print "CRITICAL ERROR: The original file %s for the session could not be found on the disk!!" % (myFullPathToOrigFile)
+                        #print("CRITICAL ERROR: The original file %s for the session could not be found on the disk!!" % (myFullPathToOrigFile))
                     if not os.access(myFullPathToTransFile, os.F_OK) :
                         foundSessionErrors = True
                         #TODO: debug and error message. Show in message box or SessionsErors and quit?
-                        #print "CRITICAL ERROR: The translation file %s for the session could not be found on the disk!!" % (myFullPathToTransFile)
+                        #print("CRITICAL ERROR: The translation file %s for the session could not be found on the disk!!" % (myFullPathToTransFile))
                     if myOrigFileMD5 != self.md5_for_file(myFullPathToOrigFile):
                         foundSessionErrors = True
                         #TODO: debug and error message. Show in message box or SessionsErors and quit?
-                        #print "CRITICAL ERROR: The original file %s in the session has a different checksum %s from the file %s found on the disk!!" % (myFullPathToOrigFile,myOrigFileMD5, self.md5_for_file(myFullPathToOrigFile))
+                        #print("CRITICAL ERROR: The original file %s in the session has a different checksum %s from the file %s found on the disk!!" % (myFullPathToOrigFile,myOrigFileMD5, self.md5_for_file(myFullPathToOrigFile)))
                     if myTransFileMD5 != self.md5_for_file(myFullPathToTransFile):
                         foundSessionErrors = True
                         #TODO: debug and error message. Show in message box or SessionsErors and quit?
-                        #print "CRITICAL ERROR: The translation file %s in the session has a different checksum %s from the file %s found on the disk!!" % (myFullPathToTransFile, myTransFileMD5, self.md5_for_file(myFullPathToTransFile))
+                        #print("CRITICAL ERROR: The translation file %s in the session has a different checksum %s from the file %s found on the disk!!" % (myFullPathToTransFile, myTransFileMD5, self.md5_for_file(myFullPathToTransFile)))
 #                   ####
                     if (not foundSessionErrors):
                         # Load the session! Set gameId, and textfields.
                         aSessionWasFound = True
                         # TODO: fill in text fields
                         #debug
-                        #print "LOADING EXISTING SESSION"
+                        #print("LOADING EXISTING SESSION")
                         self.ui.openFileNameTxtBx.setText(myFullPathToOrigFile)
                         self.ui.openTranslatedFileNameTxtBx.setText(myFullPathToTransFile)
                 if (not aSessionWasFound) and (pOriginalfullPathsFilename is not None) and (os.access(pOriginalfullPathsFilename, os.F_OK) ):
@@ -4057,7 +4058,7 @@ class MyMainWindow(QtGui.QMainWindow):
                         # ONLY for the case that a fullPathToOrigFile was passed as a parameter: create (and save) a new session
                         localfullcopyFileName = self.createAndGetNewCopyFile(pOriginalfullPathsFilename)
                         #debug
-                        #print "CREATING NEW SESSION"
+                        #print("CREATING NEW SESSION")
                         # clear session errors
                         foundSessionErrors = False
                         (savedFlag, mySessionName, myFullPathToOrigFile, myFullPathToTransFile, myGameID, myID, myOrigFileMD5, myTransFileMD5) = self.createAndSaveSession(pOriginalfullPathsFilename, localfullcopyFileName, pSaveMarkers = False)
@@ -4077,7 +4078,7 @@ class MyMainWindow(QtGui.QMainWindow):
             self.activeSessionID = -1
             return False
         else:
-            ##print "loaded session %s"% str(myID)
+            ##print("loaded session %s"% str(myID))
             self.activeSessionID = myID
             return True
 
@@ -4137,10 +4138,10 @@ class MyMainWindow(QtGui.QMainWindow):
         md5ForpOriginalfullPathsFilename = self.md5_for_file(pOriginalfullPathsFilename)
         md5ForpfullcopyFileName = self.md5_for_file(pfullcopyFileName)
         #debug
-        #print "MD5 orig: %s , MD5 copy: %s" % (md5ForpOriginalfullPathsFilename, md5ForpfullcopyFileName)
+        #print("MD5 orig: %s , MD5 copy: %s" % (md5ForpOriginalfullPathsFilename, md5ForpfullcopyFileName))
         if not os.access(self.DBFileNameAndRelPath, os.F_OK) :
             #TODO: debug and error message. Show in message box or SessionsErors and quit?
-            #print "CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath)
+            #print("CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath))
             pass
         else:
             conn = sqlite3.connect(self.DBFileNameAndRelPath)
@@ -4168,12 +4169,12 @@ class MyMainWindow(QtGui.QMainWindow):
                     break
                 if foundSelectedGame == False:
                     #TODO: debug and error message. Show in message box or SessionsErors and quit?
-                    #print "CRITICAL ERROR: The selected game was not found in the DB!"
+                    #print("CRITICAL ERROR: The selected game was not found in the DB!")
                     pass
                 retSessionName = "%s%s" % (sessionPrefix,retSessionName)
 
             sessionNameExists= False
-#            print "RetSessionName %s" % (retSessionName)
+#            print("RetSessionName %s" % (retSessionName))
             # needs an extra comma to evaluate as one parameter (and not multiple characters). Alternatively [retSessionName]
 #            c.execute("""select count(ID) from translationSessions WHERE sessionName = ?""" , (retSessionName,))
             c.execute("""select ID from translationSessions WHERE sessionName = ?""" , (retSessionName,))
@@ -4184,7 +4185,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 # add a new line in the sessions table
                 # TODO: warning here?
                 # TODO: do we always update the date here?
-                # print "UPDATING SESSION: %s" % (retSessionName)
+                # print("UPDATING SESSION: %s" % (retSessionName))
                 c.execute("""update translationSessions set fullPathToOrigFile=?, fullPathToTransFile=?, origFileMD5=?, transFileMD5=?, gameID=?, DateUpdated=strftime('%s','now') WHERE sessionName = ?""", (pOriginalfullPathsFilename, pfullcopyFileName, md5ForpOriginalfullPathsFilename, md5ForpfullcopyFileName, str(currSelGameID), retSessionName ))
             else:
                 sessionNameExists = False
@@ -4406,7 +4407,7 @@ class MyMainWindow(QtGui.QMainWindow):
         # TODO: we could return here, if the activeGameId does not match the detected one!
         #
 
-        if(self.selGameID <> detectedGameId):
+        if(self.selGameID != detectedGameId):
             detectedNumOfQuotes =0
             #origSpeechInfoFile.close()
             return (detectedNumOfQuotes, detectedGameId, None)
@@ -4432,7 +4433,7 @@ class MyMainWindow(QtGui.QMainWindow):
             while endOfFileReached == False and (beginAddrOfIndexMatrix + it00*4) < endAddress:
                 #startpos = origSpeechInfoFile.tell()
                 startpos = beginAddrOfIndexMatrix + it00*4
-    ##            print "%X" % startpos
+    ##            print("%X" % startpos)
                 #tmpWord = origSpeechInfoFile.read(4)
                 tmpWord = self.myFileBuffRead(wholeOrigSpeechInfoFile, startpos, 4)
                 it00 += 1
@@ -4447,8 +4448,8 @@ class MyMainWindow(QtGui.QMainWindow):
                         endAddress = quoteStartAddr
                         previousValidreadNdx = readNdx
 
-                    if readNdx <> 0 and quoteStartAddr % 0x10 == 0 and abs(previousValidreadNdx - readNdx ) <= 0x100:
-    ##                    print "Another one %X" % startpos
+                    if readNdx != 0 and quoteStartAddr % 0x10 == 0 and abs(previousValidreadNdx - readNdx ) <= 0x100:
+    ##                    print("Another one %X" % startpos)
                         previousValidreadNdx = readNdx
                         if retrieveQuotesFlag == True:
                             tmpListForOneCredit = []
@@ -4484,7 +4485,7 @@ class MyMainWindow(QtGui.QMainWindow):
                             endOfFileReached = True
                             break
                         newChar = unpack('B', tmpChar)
-                        if chr(newChar[0]) <> '\x00':
+                        if chr(newChar[0]) != '\x00':
                             newQuotelength += 1
 #                            quoteCharList.append(chr(newChar[0]))
                             quoteCharListCopy.append(chr(newChar[0]))
@@ -4495,7 +4496,7 @@ class MyMainWindow(QtGui.QMainWindow):
 #                        newQuoteString = self.makeOriginalStringWithEscapeSequences(quoteCharList)
                         newQuoteStringThroughGUIPresentFilter = self.makeStringInReadableExtAsciiCharlistToBeListed(quoteCharListCopy, pGrabberForTranslationDicts)
                         retrievedQuotesList.append((newQuoteStringThroughGUIPresentFilter, newQuotelength))
-#                        print newQuoteStringThroughGUIPresentFilter
+#                        print(newQuoteStringThroughGUIPresentFilter)
 
         #
         # Hints CSV
@@ -4546,7 +4547,7 @@ class MyMainWindow(QtGui.QMainWindow):
                                 readNdxEntry = unpack('<L', tmpWord)
                                 readNdx = readNdxEntry[0]
                                 quoteStartAddr = readNdx + startOfNewMatrixEnrty + myiter*4
-                                if readNdx <> 0:
+                                if readNdx != 0:
                                     tmpListForOneHintSeries.append(quoteStartAddr)
                                 else:
                                     tmpListForOneHintSeries.append(0x00)
@@ -4557,7 +4558,7 @@ class MyMainWindow(QtGui.QMainWindow):
                             myiter+=1
                     #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ??????????????????????????
                     #debug
-                    #print "Total Entries found %d" % detectedHintSetEntries
+                    #print("Total Entries found %d" % detectedHintSetEntries)
                     ndx = 0
                     quoteUntransCharList = []
                     for ndx in range (0, numofEntries):
@@ -4594,7 +4595,7 @@ class MyMainWindow(QtGui.QMainWindow):
                                             endOfFileReached = True
                                             break
                                         newChar = unpack('B', tmpChar)
-                                        if chr(newChar[0]) <> '\x00':
+                                        if chr(newChar[0]) != '\x00':
                                             if retrieveQuotesFlag == True:
                                                 newUntransQuotelength += 1
                                                 quoteUntransCharList.append(chr(newChar[0]))
@@ -4608,7 +4609,7 @@ class MyMainWindow(QtGui.QMainWindow):
                                     detectedNumOfQuotes += 1        # again we increase the count
 
                                 if endOfFileReached == False and retrieveQuotesFlag == True:
-    ##                            print quoteUntransCharList
+    ##                            print(quoteUntransCharList)
                                     retrievedQuotesList.append((newQuoteStringThroughGUIPresentFilter, newUntransQuotelength))
 
         #
@@ -4642,7 +4643,7 @@ class MyMainWindow(QtGui.QMainWindow):
                         endOfFileReached = True
                         break
                     newChar = unpack('B', tmpChar)
-                    if chr(newChar[0]) <> '\x00':
+                    if chr(newChar[0]) != '\x00':
                         if retrieveQuotesFlag == True:
                             newUntransQuotelength += 1
                             quoteUntransCharList.append(chr(newChar[0]))
@@ -4682,7 +4683,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 else:
                     detectedNumOfQuotes = (detectedNumOfQuotes + beginAddrOfIndexMatrix - beginAddrOfIndexMatrix)/ 0x8
                 #debug
-                #print "number Of entries %d" % detectedNumOfQuotes
+                #print("number Of entries %d" % detectedNumOfQuotes)
                 if retrieveQuotesFlag == True and endOfFileReached == False:
                     # find the foreign quotes
                     ndx = 0
@@ -4710,7 +4711,7 @@ class MyMainWindow(QtGui.QMainWindow):
                             readNdxEntryLbl = unpack('<L', tmpWordLbl)
                             readNdxLbl = readNdxEntryLbl[0]
                             quoteStartAddrLbl = readNdxLbl + startOfNewFrenchQuoteIndex
-                            if readNdxLbl <> 0:
+                            if readNdxLbl != 0:
                                 tmpListForFrQuotesAddrs.append(quoteStartAddrLbl)
                                 detectedQuoteEntries +=1
                             elif readNdx == 0:
@@ -4740,24 +4741,24 @@ class MyMainWindow(QtGui.QMainWindow):
                                     endOfFileReached = True
                                     break
                                 newChar = unpack('B', tmpChar)
-                                if chr(newChar[0]) <> '\x00':
+                                if chr(newChar[0]) != '\x00':
                                     newUntransQuotelength += 1
                                     quoteUntransCharList.append(chr(newChar[0]))
                                 else:
                                     break
                             if endOfFileReached == False:
-    ##                            print quoteUntransCharList
+    ##                            print(quoteUntransCharList)
                                 newQuoteStringThroughGUIPresentFilter = self.makeStringInReadableExtAsciiCharlistToBeListed(quoteUntransCharList, pGrabberForTranslationDicts)
                                 retrievedQuotesList.append((newQuoteStringThroughGUIPresentFilter, newUntransQuotelength))
 
         # all else is unsupported
         else:
             #TODO: debug and error message. Show in message box or SessionsErors and quit?
-            #print "Error - unsupported type of file. Cannot calculate quote entries"
+            #print("Error - unsupported type of file. Cannot calculate quote entries")
             detectedNumOfQuotes = 0
 
         #origSpeechInfoFile.close()
-#        print "Detected %d quotes in file. For Game ID: %d." % (detectedNumOfQuotes, detectedGameId)
+#        print("Detected %d quotes in file. For Game ID: %d." % (detectedNumOfQuotes, detectedGameId))
         return (detectedNumOfQuotes, detectedGameId, retrievedQuotesList)
 
     #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -4814,7 +4815,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 beginAddrOfIndexMatrix =filenameCreditsStartMatrxAddrList[filenameCreditsList.index(sFilename)]
             else:
                 beginAddrOfIndexMatrix =filenameCreditsStartMISE2MatrxAddrList[filenameCreditsListMISE2.index(sFilename)]
-    #        print "start address %X" % beginAddrOfIndexMatrix
+    #        print("start address %X" % beginAddrOfIndexMatrix)
             origSpeechInfoFile = open(fullPathsFilename, 'rb')
             wholeOrigSpeechInfoFile = origSpeechInfoFile.read()
             origSpeechInfoFile.close()
@@ -4832,7 +4833,7 @@ class MyMainWindow(QtGui.QMainWindow):
             while endOfFileReached == False and (beginAddrOfIndexMatrix + it00*4) < endAddress:
                 #startpos = origSpeechInfoFile.tell()
                 startpos = beginAddrOfIndexMatrix + it00*4
-    ##            print "%X" % startpos
+    ##            print("%X" % startpos)
                 #tmpWord = origSpeechInfoFile.read(4)
                 tmpWord = self.myFileBuffRead(wholeOrigSpeechInfoFile, startpos, 4)
                 it00 += 1
@@ -4847,8 +4848,8 @@ class MyMainWindow(QtGui.QMainWindow):
                         endAddress = quoteStartAddr
                         previousValidreadNdx = readNdx
 
-                    if readNdx <> 0 and quoteStartAddr % 0x10 == 0 and abs(previousValidreadNdx - readNdx ) <= 0x100:
-    ##                    print "Another one %X" % startpos
+                    if readNdx != 0 and quoteStartAddr % 0x10 == 0 and abs(previousValidreadNdx - readNdx ) <= 0x100:
+    ##                    print("Another one %X" % startpos)
                         previousValidreadNdx = readNdx
                         tmpListForOneCredit = []
                         del tmpListForOneCredit[:]
@@ -4857,8 +4858,8 @@ class MyMainWindow(QtGui.QMainWindow):
                         listOfIndexOfAllLinesCreds.append(tmpListForOneCredit)
                         detectedCreditsEntries += 1
             #debug
-            #print "Total Credits Index Entries Found: %d" % detectedCreditsEntries
-            #print "and list length is %d " % len(listOfIndexOfAllLinesCreds)
+            #print("Total Credits Index Entries Found: %d" % detectedCreditsEntries)
+            #print("and list length is %d " % len(listOfIndexOfAllLinesCreds))
     ##
     ## TODO: make into a function. Process repeated BUT MORE LITE this time, for the translated file
     ##
@@ -4889,8 +4890,8 @@ class MyMainWindow(QtGui.QMainWindow):
                     listOfIndexOfAllTransLinesCreds.append(tmpListForOneCredit)
                     detectedTransCreditsEntries += 1
             #debug
-            #print "Total Translated Credits Index Entries Found: %d" % detectedTransCreditsEntries
-            #print "and trans list length is %d " % len(listOfIndexOfAllTransLinesCreds)
+            #print("Total Translated Credits Index Entries Found: %d" % detectedTransCreditsEntries)
+            #print("and trans list length is %d " % len(listOfIndexOfAllTransLinesCreds))
 
     #
     # Back to the original file
@@ -4919,9 +4920,9 @@ class MyMainWindow(QtGui.QMainWindow):
                         endOfFileReached = True
                         break
                     newChar = unpack('B', tmpChar)
-                    if chr(newChar[0]) <> '\x00':
+                    if chr(newChar[0]) != '\x00':
                         newQuotelength += 1
-        #                print newChar[0]
+        #                print(newChar[0])
                         quoteCharList.append(chr(newChar[0]))
                         quoteCharListCopy.append(chr(newChar[0]))
                     else:
@@ -4942,11 +4943,11 @@ class MyMainWindow(QtGui.QMainWindow):
                             quoteCharList.append('\x00')
                     newUntouchedQuoteString = "".join(quoteCharList)
                     if endOfFileReached == False:
-    ##                  print quoteUntransCharList
+    ##                  print(quoteUntransCharList)
                         newUntransQuoteString = self.makeStringInReadableExtAsciiCharlistToBeListed(quoteCharList, pGrabberForTranslationDicts)
         #               # DEBUG
-        #                print "Translating: %s length: %d" % (newQuoteString, newQuotelength)
-        #                print "Translated to: %s length: %d" %  (newUntransQuoteString, newUntransQuotelength)
+        #                print("Translating: %s length: %d" % (newQuoteString, newQuotelength))
+        #                print("Translated to: %s length: %d" %  (newUntransQuoteString, newUntransQuotelength))
                         listOfEnglishLinesSpeechInfo.append((beginAddrOfEnglishQuote,newQuoteString,newQuotelength))
                         listOfForeignLinesOrigSpeechInfo.append((newQuoteStringThroughGUIPresentFilter,newQuotelength)) # new for detecting changed lines and for merging function
                         listOfAllUntouchedLinesCredits.append((beginAddrOfEnglishQuote,newUntouchedQuoteString,newQuotelength)) # ONLY for the original quote we append in the WHOLE list. For the untranslated this is done in the else statement with the other languages in its proper turn
@@ -4971,15 +4972,15 @@ class MyMainWindow(QtGui.QMainWindow):
                         endOfFileReached = True
                         break
                     newChar = unpack('B', tmpChar)
-                    if chr(newChar[0]) <> '\x00':
+                    if chr(newChar[0]) != '\x00':
                         newUntransQuotelength += 1
-        #                print newChar[0]
+        #                print(newChar[0])
                         quoteUntransCharList.append(chr(newChar[0]))
                     else:
                         break
 
                 if endOfFileReached == False:
-    #                            print quoteUntransCharList
+    #                            print(quoteUntransCharList)
                     newUntransQuoteString = self.makeStringInReadableExtAsciiCharlistToBeListed(quoteUntransCharList, pGrabberForTranslationDicts)
                     listOfUntranslatedLinesSpeechInfo.append((beginAddrOfEnglishQuote,newUntransQuoteString,newUntransQuotelength))
 
@@ -5009,13 +5010,13 @@ class MyMainWindow(QtGui.QMainWindow):
             self.loadASession(pSessionName = None, pOriginalfullPathsFilename = fullPathsFilename)
 
             # from the original file we need the original untranslated foreign language quotes!
-            #print "FULL PATH ORIG FILE", fullPathsFilename
+            #print("FULL PATH ORIG FILE", fullPathsFilename)
             origSpeechInfoFile = open(fullPathsFilename, 'rb')
             wholeOrigSpeechInfoFile = origSpeechInfoFile.read()
             origSpeechInfoFile.close()
 
             fullcopyFileName = self.ui.openTranslatedFileNameTxtBx.text().strip()
-            #print "FULL PATH TARG FILE", fullcopyFileName
+            #print("FULL PATH TARG FILE", fullcopyFileName)
             copySpeechInfoFile = open(fullcopyFileName, 'rb')
             wholeCopySpeechInfoFile = copySpeechInfoFile.read()
             copySpeechInfoFile.close()
@@ -5051,7 +5052,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 numofEntries = numofEntriesUnpacked[0]
                 numofEntries = numofEntries / 0x10
                 #debug
-                #print "number Of entries %d" % numofEntries
+                #print("number Of entries %d" % numofEntries)
 
             if endOfFileReached == False:
                 # find the english quotes
@@ -5065,7 +5066,7 @@ class MyMainWindow(QtGui.QMainWindow):
                     readNdx = -1
                     myiter = 0
                     startOfNewMatrixEnrty = beginAddrOfIndexMatrix + detectedHintSetEntries * 0x10
-    #                print startOfNewMatrixEnrty
+    #                print(startOfNewMatrixEnrty)
                     #copySpeechInfoFile.seek(startOfNewMatrixEnrty)
                     while endOfFileReached  == False and myiter < maxNumOfHintsInSeries:
                         #tmpWord = copySpeechInfoFile.read(4)
@@ -5077,7 +5078,7 @@ class MyMainWindow(QtGui.QMainWindow):
                             readNdxEntry = unpack('<L', tmpWord)
                             readNdx = readNdxEntry[0]
                             quoteStartAddr = readNdx + startOfNewMatrixEnrty + myiter*4
-                            if readNdx <> 0:
+                            if readNdx != 0:
                                 tmpListForOneHintSeries.append(quoteStartAddr)
                             else:
                                 tmpListForOneHintSeries.append(0x00)
@@ -5102,7 +5103,7 @@ class MyMainWindow(QtGui.QMainWindow):
                             readNdxEntry = unpack('<L', tmpWord)
                             readNdx = readNdxEntry[0]
                             quoteStartAddr = readNdx + startOfNewMatrixEnrty + myiterOrig*4
-                            if readNdx <> 0:
+                            if readNdx != 0:
                                 tmpListForOneHintSeriesOrig.append(quoteStartAddr)
                             else:
                                 tmpListForOneHintSeriesOrig.append(0x00)
@@ -5112,13 +5113,13 @@ class MyMainWindow(QtGui.QMainWindow):
                                 break
                         myiterOrig+=1
                 #debug
-                #print "Total Entries found %d" % detectedHintSetEntries
+                #print("Total Entries found %d" % detectedHintSetEntries)
                 #DEBUG
-                #print "listOflistsOfAllQuotesHintsCSV 226: ", listOflistsOfAllQuotesHintsCSV[226]
+                #print("listOflistsOfAllQuotesHintsCSV 226: ", listOflistsOfAllQuotesHintsCSV[226])
                 ndx = 0
                 for ndx in range (0, numofEntries):
     #            while ndx < len(listOflistsOfAllQuotesHintsCSV):
-    #                print "list of lists entry %d: %s" % (ndx+1,listOflistsOfAllQuotesHintsCSV[ndx])
+    #                print("list of lists entry %d: %s" % (ndx+1,listOflistsOfAllQuotesHintsCSV[ndx]))
                     if ndx % plithosOfDifferentLanguages == 0:
                         for innerNdx in range(0, len(listOflistsOfAllQuotesHintsCSV[ndx])):
                             newQuotelength = 0
@@ -5146,15 +5147,15 @@ class MyMainWindow(QtGui.QMainWindow):
                                         endOfFileReached = True
                                         break
                                     newChar = unpack('B', tmpChar)
-                                    if chr(newChar[0]) <> '\x00':
+                                    if chr(newChar[0]) != '\x00':
                                         newQuotelength += 1
-                        #                print newChar[0]
+                        #                print(newChar[0])
                                         quoteCharList.append(chr(newChar[0]))
                                     else:
                                         break
 
                                 if endOfFileReached == False:
-        #                            print quoteCharList
+        #                            print(quoteCharList)
                                     newQuoteString = self.makeOriginalStringWithEscapeSequences(quoteCharList)
                                     #
                                     # SPECIAL FOR HINTS CSV the original quote is stored untouched and with the padded 0x10!
@@ -5171,7 +5172,7 @@ class MyMainWindow(QtGui.QMainWindow):
                                 newUntouchedQuoteString = ""
                                 newQuotelength = 0
                 #               # DEBUG!
-                #                print "Remade char list: %s" % newQuoteString #self.remakeCharlistWithNoEscapeSequences(newQuoteString)
+                #                print("Remade char list: %s" % newQuoteString #self.remakeCharlistWithNoEscapeSequences(newQuoteString))
                             # read the untranslated quote bytes of the selected language.
                             # the begin addr is calculated similarly for both uiText and Speech.info
                             beginAddrOfUntransQuote = listOflistsOfAllQuotesHintsCSV[ndx+pSelectedLanguageOffset][innerNdx]
@@ -5186,7 +5187,7 @@ class MyMainWindow(QtGui.QMainWindow):
                                         endOfFileReached = True
                                         break
                                     newChar = unpack('B', tmpChar)
-                                    if chr(newChar[0]) <> '\x00':
+                                    if chr(newChar[0]) != '\x00':
                                         newUntransQuotelength += 1
                                         quoteUntransCharList.append(chr(newChar[0]))
                                     else:
@@ -5211,7 +5212,7 @@ class MyMainWindow(QtGui.QMainWindow):
                                         endOfOrigFileReached = True
                                         break
                                     newChar = unpack('B', tmpChar)
-                                    if chr(newChar[0]) <> '\x00':
+                                    if chr(newChar[0]) != '\x00':
                                         origNewUntransQuotelength += 1
                                         origQuoteUntransCharList.append(chr(newChar[0]))
                                     else:
@@ -5224,19 +5225,19 @@ class MyMainWindow(QtGui.QMainWindow):
 
                             #
                             if endOfFileReached == False:
-    ##                            print quoteUntransCharList
+    ##                            print(quoteUntransCharList)
                                 #if newQuotelength == 0 or newUntransQuotelength == 0:
                 #               # DEBUG
-                #                print "Translating: %s length: %d" % (newQuoteString, newQuotelength)
-                #                print "Translated to: %s length: %d" %  (newUntransQuoteString, newUntransQuotelength)
+                #                print("Translating: %s length: %d" % (newQuoteString, newQuotelength))
+                #                print("Translated to: %s length: %d" %  (newUntransQuoteString, newUntransQuotelength))
                                 listOfEnglishLinesSpeechInfo.append((beginAddrOfEnglishQuote,newQuoteString,newQuotelength))
                                 listOfUntranslatedLinesSpeechInfo.append((beginAddrOfUntransQuote,newUntransQuoteString,newUntransQuotelength))
                                 listOfForeignLinesOrigSpeechInfo.append((newQuoteStringThroughGUIPresentFilter,origNewUntransQuotelength)) # new for detecting changed lines and for merging function
 
                                 listOfAllLinesHintsCSV.append((beginAddrOfEnglishQuote,newUntouchedQuoteString,newQuotelength)) # ONLY for the original quote we append in the WHOLE list.
                                                                                                                                 #For the untranslated this is done in the else statement with the other languages in its proper turn
-                #                print specialCharQuoteList
-                #                print quoteUntransCharList
+                #                print(specialCharQuoteList)
+                #                print(quoteUntransCharList)
 
                                 if newQuotelength == 0:
                                     countOfZeroLengthOrigQuotes += 1
@@ -5263,9 +5264,9 @@ class MyMainWindow(QtGui.QMainWindow):
                                         endOfFileReached = True
                                         break
                                     newChar = unpack('B', tmpChar)
-                                    if chr(newChar[0]) <> '\x00':
+                                    if chr(newChar[0]) != '\x00':
                                         newRestQuotelength += 1
-                        #                print newChar[0]
+                        #                print(newChar[0])
                                         quoteCharList.append(chr(newChar[0]))
                                     else:
                                         break
@@ -5288,9 +5289,9 @@ class MyMainWindow(QtGui.QMainWindow):
 
                     #end if indx % 5 ==0 or else
                 #end outer for loop
-    #        print "ECHO ECHO ECHO"
-    #        print listOfAllLinesHintsCSV
-    #        print "ECHO ECHO ECHO"
+    #        print("ECHO ECHO ECHO")
+    #        print(listOfAllLinesHintsCSV)
+    #        print("ECHO ECHO ECHO")
             #copySpeechInfoFile.close()
             #origSpeechInfoFile.close()
             #debug
@@ -5363,18 +5364,18 @@ class MyMainWindow(QtGui.QMainWindow):
                         endOfFileReached = True
                         break
                     newChar = unpack('B', tmpChar)
-                    if chr(newChar[0]) <> '\x00':
+                    if chr(newChar[0]) != '\x00':
                         newQuotelength += 1
-        #                print newChar[0]
+        #                print(newChar[0])
                         quoteCharList.append(chr(newChar[0]))
                     else:
                         break
 
                 if endOfFileReached == False:
-    #                print quoteCharList
+    #                print(quoteCharList)
                     newQuoteString = self.makeOriginalStringWithEscapeSequences(quoteCharList)
     #               # DEBUG!
-    #                print "Remade char list: %s" % self.remakeCharlistWithNoEscapeSequences(newQuoteString)
+    #                print("Remade char list: %s" % self.remakeCharlistWithNoEscapeSequences(newQuoteString))
 
                     # read the untranslated quote bytes of the selected language.
                     # the begin addr is calcualted similarly for both uiText and Speech.info
@@ -5387,7 +5388,7 @@ class MyMainWindow(QtGui.QMainWindow):
                             endOfFileReached = True
                             break
                         newChar = unpack('B', tmpChar)
-                        if chr(newChar[0]) <> '\x00':
+                        if chr(newChar[0]) != '\x00':
                             newUntransQuotelength += 1
                             quoteUntransCharList.append(chr(newChar[0]))
                         else:
@@ -5403,7 +5404,7 @@ class MyMainWindow(QtGui.QMainWindow):
                             endOfOrigFileReached = True
                             break
                         newChar = unpack('B', tmpChar)
-                        if chr(newChar[0]) <> '\x00':
+                        if chr(newChar[0]) != '\x00':
                             origNewUntransQuotelength += 1
                             origQuoteUntransCharList.append(chr(newChar[0]))
                         else:
@@ -5415,14 +5416,14 @@ class MyMainWindow(QtGui.QMainWindow):
                     newQuoteStringThroughGUIPresentFilter = self.makeStringInReadableExtAsciiCharlistToBeListed(origQuoteUntransCharList, pGrabberForTranslationDicts)
                     #if newQuotelength == 0 or newUntransQuotelength == 0:
     #               # DEBUG
-#                    print "Line: %d. Translating: %s length: %d" % (currentline, newQuoteString, newQuotelength)
-#                    print "Translated to: %s length: %d" %  (newUntransQuoteString, newUntransQuotelength)
+#                    print("Line: %d. Translating: %s length: %d" % (currentline, newQuoteString, newQuotelength))
+#                    print("Translated to: %s length: %d" %  (newUntransQuoteString, newUntransQuotelength))
                     listOfEnglishLinesSpeechInfo.append((beginAddrOfEnglishQuote,newQuoteString,newQuotelength))
                     listOfUntranslatedLinesSpeechInfo.append((beginAddrOfUntransQuote,newUntransQuoteString,newUntransQuotelength))
                     listOfForeignLinesOrigSpeechInfo.append((newQuoteStringThroughGUIPresentFilter,origNewUntransQuotelength)) # new for detecting changed lines and for merging function
 
-    #                print specialCharQuoteList
-    #                print quoteUntransCharList
+    #                print(specialCharQuoteList)
+    #                print(quoteUntransCharList)
 
                     if newQuotelength == 0:
                         countOfZeroLengthOrigQuotes += 1
@@ -5433,9 +5434,9 @@ class MyMainWindow(QtGui.QMainWindow):
             #copySpeechInfoFile.close()
             #origSpeechInfoFile.close()
     #               # DEBUG
-    #        print "Total original quotes of zero length: %d" % countOfZeroLengthOrigQuotes
-    #        print "Total translated quotes of zero length: %d" % countOfZeroLengthTransQuotes
-    #        print listOfUntranslatedLinesSpeechInfo
+    #        print("Total original quotes of zero length: %d" % countOfZeroLengthOrigQuotes)
+    #        print("Total translated quotes of zero length: %d" % countOfZeroLengthTransQuotes)
+    #        print(listOfUntranslatedLinesSpeechInfo)
             #debug
             #print("orig foreign quote found: %d" % (len(listOfForeignLinesOrigSpeechInfo)))
             return (listOfEnglishLinesSpeechInfo, listOfUntranslatedLinesSpeechInfo)
@@ -5537,7 +5538,7 @@ class MyMainWindow(QtGui.QMainWindow):
                     else:
                         numofEntries = (numofEntries + beginAddrOfIndexMatrix - beginAddrOfIndexMatrix)/ 0x8
                     #debug
-                    #print "number Of entries %d" % numofEntries
+                    #print("number Of entries %d" % numofEntries)
 
                 if endOfFileReached == False:
                     # find the english quotes
@@ -5580,7 +5581,7 @@ class MyMainWindow(QtGui.QMainWindow):
                             readNdxEntryLbl = unpack('<L', tmpWordLbl)
                             readNdxLbl = readNdxEntryLbl[0]
                             quoteStartAddrLbl = readNdxLbl + startOfNewEnglishLabelIndex
-                            if readNdxLbl <> 0:
+                            if readNdxLbl != 0:
                                 tmpListForLblQuotesAddrs.append(quoteStartAddrLbl)
                                 # read for the address of the english quote (for speech.info)
                                 #   or for the translated quote (for uitext)
@@ -5593,7 +5594,7 @@ class MyMainWindow(QtGui.QMainWindow):
                                     readNdxEntry = unpack('<L', tmpWord)
                                     readNdx = readNdxEntry[0]
                                     quoteStartAddrEn = readNdx + startOfNewEnglishQuoteIndex
-                                    if readNdx <> 0:
+                                    if readNdx != 0:
                                         if sFilename == filenameFrSpeechInfo:
                                             tmpListForEnQuotesAddrs.append(quoteStartAddrEn)
                                         else:
@@ -5610,7 +5611,7 @@ class MyMainWindow(QtGui.QMainWindow):
                                                 readNdxEntryFr = unpack('<L', tmpWordFr)
                                                 readNdxFr = readNdxEntryFr[0]
                                                 quoteStartAddrFr = readNdxFr + startOfNewFrenchQuoteIndex
-                                                if readNdxFr <> 0:
+                                                if readNdxFr != 0:
                                                     tmpListForFrQuotesAddrs.append(quoteStartAddrFr)
                                                 elif readNdxFr == 0:
                                                     endOfFileReached = True
@@ -5639,13 +5640,13 @@ class MyMainWindow(QtGui.QMainWindow):
                             readNdxEntryLbl = unpack('<L', tmpWordLbl)
                             readNdxLbl = readNdxEntryLbl[0]
                             quoteStartAddrLbl = readNdxLbl + startOfFrenchQuote
-                            if readNdxLbl <> 0:
+                            if readNdxLbl != 0:
                                 tmpListForOrigForeignQuotesAddrs.append(quoteStartAddrLbl)
                             elif readNdx == 0:
                                 endOfOrigFileReached = True
                                 break
                     #debug
-                    #print "Total Entries found %d" % detectedQuoteEntries
+                    #print("Total Entries found %d" % detectedQuoteEntries)
                     #
                     # For the uiText info case, we open the en. file and get the english text pointer, which we suppose to be in the same order (otherwise we need label matching!)
                     #
@@ -5671,7 +5672,7 @@ class MyMainWindow(QtGui.QMainWindow):
                                 readNdxEntryQt = unpack('<L', tmpWordQt)
                                 readNdxQt = readNdxEntryQt[0]
                                 quoteStartAddrQt = readNdxQt + startOfNewEnglishQuoteIndex
-                                if readNdxQt <> 0:
+                                if readNdxQt != 0:
                                     tmpListForEnQuotesAddrs.append(quoteStartAddrQt)
                                     detectedOrigQuoteEntries += 1
                                 elif readNdxQt == 0:
@@ -5711,9 +5712,9 @@ class MyMainWindow(QtGui.QMainWindow):
                                 endOfFileReached = True
                                 break
                             newChar = unpack('B', tmpChar)
-                            if chr(newChar[0]) <> '\x00':
+                            if chr(newChar[0]) != '\x00':
                                 newLabellength += 1
-                #                print newChar[0]
+                #                print(newChar[0])
                                 labelCharList.append(chr(newChar[0]))
                             else:
                                 break
@@ -5748,15 +5749,15 @@ class MyMainWindow(QtGui.QMainWindow):
                                     endOfFileReached = True
                                     break
                                 newChar = unpack('B', tmpChar)
-                                if chr(newChar[0]) <> '\x00':
+                                if chr(newChar[0]) != '\x00':
                                     newQuotelength += 1
-                    #                print newChar[0]
+                    #                print(newChar[0])
                                     quoteCharList.append(chr(newChar[0]))
                                 else:
                                     break
 
                             if endOfFileReached == False:
-    #                            print quoteCharList
+    #                            print(quoteCharList)
                                 newQuoteString = self.makeOriginalStringWithEscapeSequences(quoteCharList)
                                 origQuoteLengthWithNullTerm = newQuotelength + 1
                                 origQuoteRaw = None
@@ -5783,13 +5784,13 @@ class MyMainWindow(QtGui.QMainWindow):
                                         endOfFileReached = True
                                         break
                                     newChar = unpack('B', tmpChar)
-                                    if chr(newChar[0]) <> '\x00':
+                                    if chr(newChar[0]) != '\x00':
                                         newUntransQuotelength += 1
                                         quoteUntransCharList.append(chr(newChar[0]))
                                     else:
                                         break
                                 if endOfFileReached == False:
-        ##                            print quoteUntransCharList
+        ##                            print(quoteUntransCharList)
                                     newUntransQuoteString = self.makeStringInReadableExtAsciiCharlistToBeListed(quoteUntransCharList, pGrabberForTranslationDicts)
                                 #
                                 # repeat for original foreign quote
@@ -5804,7 +5805,7 @@ class MyMainWindow(QtGui.QMainWindow):
                                         endOfOrigFileReached = True
                                         break
                                     newChar = unpack('B', tmpChar)
-                                    if chr(newChar[0]) <> '\x00':
+                                    if chr(newChar[0]) != '\x00':
                                         origNewUntransQuotelength += 1
                                         origQuoteUntransCharList.append(chr(newChar[0]))
                                     else:
@@ -5812,8 +5813,8 @@ class MyMainWindow(QtGui.QMainWindow):
                                 if endOfOrigFileReached == False:
                                     newQuoteStringThroughGUIPresentFilter = self.makeStringInReadableExtAsciiCharlistToBeListed(origQuoteUntransCharList, pGrabberForTranslationDicts)
             #               # DEBUG
-            #                print "Translating: %s length: %d" % (newQuoteString, newQuotelength)
-            #                print "Translated to: %s length: %d" %  (newUntransQuoteString, newUntransQuotelength)
+            #                print("Translating: %s length: %d" % (newQuoteString, newQuotelength))
+            #                print("Translated to: %s length: %d" %  (newUntransQuoteString, newUntransQuotelength))
                             listOfEnglishLinesSpeechInfo.append((beginAddrOfEnglishQuote,newQuoteString,newQuotelength))
                             listOfForeignLinesOrigSpeechInfo.append((newQuoteStringThroughGUIPresentFilter,origNewUntransQuotelength)) # new for detecting changed lines and for merging function
                             listOfUntranslatedLinesSpeechInfo.append((beginAddrOfUntransQuote,newUntransQuoteString,newUntransQuotelength))
@@ -5826,9 +5827,9 @@ class MyMainWindow(QtGui.QMainWindow):
                             if newUntransQuotelength == 0:
                                 countOfZeroLengthTransQuotes += 1
                     #end  for loop: for ndx in range (0, detectedQuoteEntries)
-        #        print "ECHO ECHO ECHO"
-        #        print listOfAllLinesHintsCSV
-        #        print "ECHO ECHO ECHO"
+        #        print("ECHO ECHO ECHO")
+        #        print(listOfAllLinesHintsCSV)
+        #        print("ECHO ECHO ECHO")
         #        transSpeechInfoFile.close()
 ##                origFrSpeechInfoFile.close()
                 #if sFilename == filenameFrUIText:
@@ -5863,7 +5864,7 @@ class MyMainWindow(QtGui.QMainWindow):
 ##                            endOfFileReached = True
 ##                            break
 ##                        newChar = unpack('B', tmpChar)
-##                        if chr(newChar[0]) <> '\x00':
+##                        if chr(newChar[0]) != '\x00':
 ##                            newQuotelength += 1
 ##                            quoteCharList.append(chr(newChar[0]))
 ##                        else:
@@ -5951,7 +5952,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 datumHexUnCode = datumHex ^ 0x69
                 scummDecodeBuffToRet.append(pack('B', datumHexUnCode))
             ## DEBUG 4.7
-            #print "length of decoded is {0}".format(len(scummDecodeBuffToRet))
+            #print("length of decoded is {0}".format(len(scummDecodeBuffToRet)))
             return scummDecodeBuffToRet
         else:
             return scummDecodeBuffToRet
@@ -5967,7 +5968,7 @@ class MyMainWindow(QtGui.QMainWindow):
                 datumHexUnCode = datumHex ^ 0x69
                 scummEncodeBuffToRet.append(pack('B', datumHexUnCode))
             ## DEBUG 4.7
-            #print "length of encoded is {0}".format(len(scummEncodeBuffToRet))
+            #print("length of encoded is {0}".format(len(scummEncodeBuffToRet)))
             return scummEncodeBuffToRet
         else:
             return scummEncodeBuffToRet
@@ -6010,7 +6011,7 @@ class MyMainWindow(QtGui.QMainWindow):
             startofCommands = 8
             opCodeCursor = startofCommands
             while opCodeCursor < len(wholeDataClassicEnM2GivDecoded_SCRIPT) :
-                ##print "opCodeCursor {0}".format(opCodeCursor)
+                ##print("opCodeCursor {0}".format(opCodeCursor))
                 #parse command starting from cursor
                 #decode first byte
                 datumUnpacked = unpack('B', wholeDataClassicEnM2GivDecoded_SCRIPT[opCodeCursor])
@@ -6031,13 +6032,13 @@ class MyMainWindow(QtGui.QMainWindow):
                 elif datumHex == 0x48: #unless equals # we could use the jump operands to just get these, but we go the more verbose route
                     tmpShortOperand = []
                     tmpShortOperand = wholeDataClassicEnM2GivDecoded_SCRIPT[(opCodeCursor+3): (opCodeCursor+5)]
-                    #print len(tmpShortOperand)
-                    #print unpack('<B',tmpShortOperand[0])[0]
-                    #print unpack('<B',tmpShortOperand[1])[0]
+                    #print(len(tmpShortOperand))
+                    #print(unpack('<B',tmpShortOperand[0])[0])
+                    #print(unpack('<B',tmpShortOperand[1])[0])
 #                    U = array.array("H")
 #                    U.fromstring(tmpShortOperand)
                     datumUnpacked = unpack('<H', ''.join(tmpShortOperand) )
-                    #print (datumUnpacked[0], opCodeCursor+3 )
+                    #print((datumUnpacked[0], opCodeCursor+3 ))
                     retval.append( (datumUnpacked[0], opCodeCursor+3 ) )
                     opCodeCursor += 7
                     unlessEqCommands +=1
@@ -6058,14 +6059,14 @@ class MyMainWindow(QtGui.QMainWindow):
                     opCodeCursor += 5
                     otherCommands +=1
                 else:
-                    print "unknown command %02X" % (datumHex, )
+                    print("unknown command %02X" % (datumHex, ))
                     unknownCommands +=1
                     opCodeCursor += 1 # ???
         elif filename == 'SCRP_0064':
             startofCommands = 8
             opCodeCursor = startofCommands
             while opCodeCursor < len(wholeDataClassicEnM2GivDecoded_SCRIPT) :
-                ##print "opCodeCursor {0}".format(opCodeCursor)
+                ##print("opCodeCursor {0}".format(opCodeCursor))
                 #parse command starting from cursor
                 #decode first byte
                 datumUnpacked = unpack('B', wholeDataClassicEnM2GivDecoded_SCRIPT[opCodeCursor])
@@ -6086,13 +6087,13 @@ class MyMainWindow(QtGui.QMainWindow):
                 elif datumHex == 0x48: #unless equals # we could use the jump operands to just get these, but we go the more verbose route
                     tmpShortOperand = []
                     tmpShortOperand = wholeDataClassicEnM2GivDecoded_SCRIPT[(opCodeCursor+3): (opCodeCursor+5)]
-                    #print len(tmpShortOperand)
-                    #print unpack('<B',tmpShortOperand[0])[0]
-                    #print unpack('<B',tmpShortOperand[1])[0]
+                    #print(len(tmpShortOperand))
+                    #print(unpack('<B',tmpShortOperand[0])[0])
+                    #print(unpack('<B',tmpShortOperand[1])[0])
 #                    U = array.array("H")
 #                    U.fromstring(tmpShortOperand)
                     datumUnpacked = unpack('<H', ''.join(tmpShortOperand) )
-                    #print (datumUnpacked[0], opCodeCursor+3 )
+                    #print((datumUnpacked[0], opCodeCursor+3 ))
                     retval.append( (datumUnpacked[0], opCodeCursor+3 ) )
                     opCodeCursor += 7
                     unlessEqCommands +=1
@@ -6135,7 +6136,7 @@ class MyMainWindow(QtGui.QMainWindow):
                     opCodeCursor += 4
                     otherCommands +=1
 
-                elif datumHex == 0x0F: # print string (null terminated)
+                elif datumHex == 0x0F: # print(string (null terminated))
                     # special case to skip because it uses formatted string with vars:
                     if opCodeCursor == 1909:
                         opCodeCursor = 1957
@@ -6156,14 +6157,14 @@ class MyMainWindow(QtGui.QMainWindow):
                         opCodeCursor = 1908
                         otherCommands +=35
                     else:
-                        print "unknown command %02X" % (datumHex, )
+                        print("unknown command %02X" % (datumHex, ))
                         unknownCommands +=1
                         opCodeCursor += 1 # ???
         elif  filename == 'LSCR_0207':
             startofCommands = 9
             opCodeCursor = startofCommands
             while opCodeCursor < len(wholeDataClassicEnM2GivDecoded_SCRIPT) :
-                ##print "opCodeCursor {0}".format(opCodeCursor)
+                ##print("opCodeCursor {0}".format(opCodeCursor))
                 #parse command starting from cursor
                 #decode first byte
                 datumUnpacked = unpack('B', wholeDataClassicEnM2GivDecoded_SCRIPT[opCodeCursor])
@@ -6172,7 +6173,7 @@ class MyMainWindow(QtGui.QMainWindow):
                     tmpShortOperand = []
                     tmpShortOperand = wholeDataClassicEnM2GivDecoded_SCRIPT[(opCodeCursor+3): (opCodeCursor+5)]
                     datumUnpacked = unpack('<H', ''.join(tmpShortOperand) )
-                    #print (datumUnpacked[0], opCodeCursor+3 )
+                    #print((datumUnpacked[0], opCodeCursor+3 ))
                     retval.append( (datumUnpacked[0], opCodeCursor+3 ) )
                     opCodeCursor += 7
                     unlessEqCommands +=1
@@ -6196,7 +6197,7 @@ class MyMainWindow(QtGui.QMainWindow):
                     opCodeCursor += 3
                     otherCommands +=1
                 else:
-                    print "unknown command %02X" % (datumHex, )
+                    print("unknown command %02X" % (datumHex, ))
                     unknownCommands +=1
                     opCodeCursor += 1 # ???
 
@@ -6204,7 +6205,7 @@ class MyMainWindow(QtGui.QMainWindow):
 
         #report
         ## DEBUG 4.7
-        #print "File {0}. Total commands: {1}, Useful: {2}, Other: {3}, Unknown: {4}, End Script: {5}".format(filename, unknownCommands+unlessEqCommands+otherCommands+endScriptCommands, unlessEqCommands, otherCommands, unknownCommands, endScriptCommands)
+        #print("File {0}. Total commands: {1}, Useful: {2}, Other: {3}, Unknown: {4}, End Script: {5}".format(filename, unknownCommands+unlessEqCommands+otherCommands+endScriptCommands, unlessEqCommands, otherCommands, unknownCommands, endScriptCommands))
         return retval
 
 #
@@ -6215,15 +6216,15 @@ class MyMainWindow(QtGui.QMainWindow):
 # #########################
 #
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     window = MyMainWindow()
     sys.exit(app.exec_())
 
 
 ##if __name__ == "__main__":
 ##
-###print this is a test
-##    print "This is a test ######################################"
+###print(this is a test)
+##    print("This is a test ######################################")
 ##    originalText = "The Sea Monkey"
 ##    translatedText = "το Sea Monkey"
 ##    localGrabInstance = grabberFromPNG('windows-1253', 1)
@@ -6236,17 +6237,17 @@ if __name__ == '__main__':
 ##            translatedTextAsCharsList[itmp] = chr(ord(translatedTextAsCharsList[itmp]))
 ##    resultingTranslatedText = "".join(translatedTextAsCharsList)
 ##    if len(resultingTranslatedText) > 255:
-##        print "Error: Cannot have more than 255 chars in translated sentence for uitext.info file"
+##        print("Error: Cannot have more than 255 chars in translated sentence for uitext.info file")
 ##    else:
 ##        tmpOpenFile = open("tmpFileWithTrans", 'wb')
 ##        tmpOpenFile.write("".join(translatedTextAsCharsList))
 ##        tmpOpenFile.write('\x00')
 ##        tmpOpenFile.close()
 ##
-##    print "Translating %s :" % originalText
-##    print "Translated to %s: " %  translatedText
-##    print translatedTextAsCharsList
-##    print "This is a test ######################################"
+##    print("Translating %s :" % originalText)
+##    print("Translated to %s: " %  translatedText)
+##    print(translatedTextAsCharsList)
+##    print("This is a test ######################################")
 ##    originalText = "Cluuuck"
 ##    translatedText = "Κλααακ"
 ##    localGrabInstance = grabberFromPNG('windows-1253', 1)
@@ -6259,17 +6260,17 @@ if __name__ == '__main__':
 ##            translatedTextAsCharsList[itmp] = chr(ord(translatedTextAsCharsList[itmp]))
 ##    resultingTranslatedText = "".join(translatedTextAsCharsList)
 ##    if len(resultingTranslatedText) > 255:
-##        print "Error: Cannot have more than 255 chars in translated sentence for uitext.info file"
+##        print("Error: Cannot have more than 255 chars in translated sentence for uitext.info file")
 ##    else:
 ##        tmpOpenFile = open("tmpFileWithTrans", 'wb')
 ##        tmpOpenFile.write("".join(translatedTextAsCharsList))
 ##        tmpOpenFile.write('\x00')
 ##        tmpOpenFile.close()
 ##
-##    print "Translating %s :" % originalText
-##    print "Translated to %s: " %  translatedText
-##    print translatedTextAsCharsList
-##    print "This is a test ######################################"
+##    print("Translating %s :" % originalText)
+##    print("Translated to %s: " %  translatedText)
+##    print(translatedTextAsCharsList)
+##    print("This is a test ######################################")
 ##    originalText = "ΚREEEEEEAK"
 ##    translatedText = "ΚΡΙΙΙΙΙΙΙΚ"
 ##    localGrabInstance = grabberFromPNG('windows-1253', 1)
@@ -6282,17 +6283,17 @@ if __name__ == '__main__':
 ##            translatedTextAsCharsList[itmp] = chr(ord(translatedTextAsCharsList[itmp]))
 ##    resultingTranslatedText = "".join(translatedTextAsCharsList)
 ##    if len(resultingTranslatedText) > 255:
-##        print "Error: Cannot have more than 255 chars in translated sentence for uitext.info file"
+##        print("Error: Cannot have more than 255 chars in translated sentence for uitext.info file")
 ##    else:
 ##        tmpOpenFile = open("tmpFileWithTrans", 'wb')
 ##        tmpOpenFile.write("".join(translatedTextAsCharsList))
 ##        tmpOpenFile.write('\x00')
 ##        tmpOpenFile.close()
 ##
-##    print "Translating %s :" % originalText
-##    print "Translated to %s: " %  translatedText
-##    print translatedTextAsCharsList
-##    print "This is a test ######################################"
+##    print("Translating %s :" % originalText)
+##    print("Translated to %s: " %  translatedText)
+##    print(translatedTextAsCharsList)
+##    print("This is a test ######################################")
 ##    originalText = "Oh^ no more than \255\004\195\000 pieces of eight."
 ##    translatedText = "Ω^ όχι παραπάνω από ... κομμάτια των οχτώ."
 ##    localGrabInstance = grabberFromPNG('windows-1253', 1)
@@ -6305,16 +6306,16 @@ if __name__ == '__main__':
 ##            translatedTextAsCharsList[itmp] = chr(ord(translatedTextAsCharsList[itmp]))
 ##    resultingTranslatedText = "".join(translatedTextAsCharsList)
 ##    if len(resultingTranslatedText) > 255:
-##        print "Error: Cannot have more than 255 chars in translated sentence for uitext.info file"
+##        print("Error: Cannot have more than 255 chars in translated sentence for uitext.info file")
 ##    else:
 ##        tmpOpenFile = open("tmpFileWithTrans", 'wb')
 ##        tmpOpenFile.write("".join(translatedTextAsCharsList))
 ##        tmpOpenFile.write('\x00')
 ##        tmpOpenFile.close()
 ##
-##    print "Translating %s :" % originalText
-##    print "Translated to %s: " %  translatedText
-##    print translatedTextAsCharsList
+##    print("Translating %s :" % originalText)
+##    print("Translated to %s: " %  translatedText)
+##    print(translatedTextAsCharsList)
 ##
 ###
 ### Repete :)))
@@ -6330,23 +6331,23 @@ if __name__ == '__main__':
 ##            translatedTextAsCharsList2[itmp] = chr(ord(translatedTextAsCharsList2[itmp]))
 ##    resultingTranslatedText = "".join(translatedTextAsCharsList2)
 ##    if len(resultingTranslatedText) > 256:
-##        print "Error: Cannot have more than 255 chars in translated sentence for uitext.info file"
+##        print("Error: Cannot have more than 255 chars in translated sentence for uitext.info file")
 ##    else:
 ##        tmpOpenFile = open("tmpFileWithTrans", 'wb')
 ##        tmpOpenFile.write("".join(translatedTextAsCharsList2))
 ##        tmpOpenFile.write('\x00')
 ##        tmpOpenFile.close()
 ##
-##    print "Translating %s :" % originalText
-##    print "Translated to %s: " %  translatedText
-##    print translatedTextAsCharsList2
+##    print("Translating %s :" % originalText)
+##    print("Translated to %s: " %  translatedText)
+##    print(translatedTextAsCharsList2)
 ###    exit()
 ##
-##    print "This ENDs the test ######################################"
+##    print("This ENDs the test ######################################")
 ##
 ##    parseQuoteFile(filenameSpeechInfo, 1)
 ##
 ###        except IOError:
 ###            pass
 ##else:
-##	print 'Imported from another module'
+##	print('Imported from another module')

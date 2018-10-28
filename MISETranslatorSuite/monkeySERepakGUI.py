@@ -14,23 +14,23 @@ sip.setapi('QString', 2)
 import msgBoxesStub
 
 import os, sys, shutil
-from PyQt4 import QtCore, QtGui, uic
+from Qt import QtCore, QtGui
 
 try:
-    from PyQt4.QtCore import QString
+    from Qt.QtCore import QString
 except ImportError:
 # we are using Python3 so QString is not defined
     QString = type("")
 from  monkeySERepaker import pakFile
 
-#from PyQt4.QtGui import QPainter, QColor, QPalette, QWidget
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtGui import QCloseEvent
+from Qt.QtCore import *
+from Qt.QtGui import *
+from Qt.QtGui import QCloseEvent
+from Qt.QtWidgets import QMainWindow
 
 #
 # TODO: Use GUI file if available!
-class MyMainRepackerDLGWindow(QtGui.QMainWindow):
+class MyMainRepackerDLGWindow(QMainWindow):
 
     tryEncoding = 'windows-1253'
     origEncoding = 'windows-1252'
@@ -54,8 +54,8 @@ class MyMainRepackerDLGWindow(QtGui.QMainWindow):
     ui = None
 
     def eventFilter(self, object, event):
-        #print "EVENT TYPE: %s VS %s " % (event.__class__.__name__, QtGui.QCloseEvent.__name__)
-        #print "OBJECT: %s VS %s " % (object.__class__.__name__, self.ui.__class__.__name__)
+        #print("EVENT TYPE: %s VS %s " % (event.__class__.__name__, QtGui.QCloseEvent.__name__))
+        #print("OBJECT: %s VS %s " % (object.__class__.__name__, self.ui.__class__.__name__))
         if self.ui.closingFlag  == False and event.__class__ == QtGui.QCloseEvent:
         ## HANDLE EVENT....
             self.closeEvent(event)
@@ -77,13 +77,13 @@ class MyMainRepackerDLGWindow(QtGui.QMainWindow):
             self.basedir = os.path.dirname(__file__)
         # Set up the user interface from Designer.
         uiRepackerToolFilePath = os.path.join(self.relPath, self.uiFolderName, self.uiRepackerToolFileName)
-        #print uiRepackerToolFilePath
+        #print(uiRepackerToolFilePath)
         if not os.access(uiRepackerToolFilePath, os.F_OK) :
-            print "Could not find the required ui file %s for the Repacker Tool application. Quiting..." % (self.uiRepackerToolFileName)
+            print("Could not find the required ui file %s for the Repacker Tool application. Quiting..." % (self.uiRepackerToolFileName))
             self.tryToCloseWin()
             return
 
-        self.ui = uic.loadUi(uiRepackerToolFilePath)
+        self.ui = QtCompat.uic.loadUi(uiRepackerToolFilePath)
         self.ui.show()
 
         self.icon = QIcon(":/icons/iconsimple.ico")
@@ -189,7 +189,7 @@ class MyMainRepackerDLGWindow(QtGui.QMainWindow):
             selParseMode = self.MI1GameID
         elif selParseModeStr == self.MI2GameStr:
             selParseMode = self.MI2GameID
-        #print "parsMode %d" % (selParseMode,)
+        #print("parsMode %d" % (selParseMode,))
 
         if TMPoriginalPakFilename == '' or TMProotFolderWithExtractedFiles == '' or selParseMode <= 0 or selParseMode >2:
             msgBoxesStub.qMsgBoxWarning(self.ui, "Warning", "Arguments for process are invalid.")

@@ -5,9 +5,10 @@
 #-------------------------------------------------------------------------------
 ##import sip
 ##sip.setapi('QString', 2)
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from Qt import QtCore, QtGui
+from Qt.QtCore import *
+from Qt.QtGui import *
+from Qt.QtWidgets import QStyledItemDelegate
 import re
 import highlightRulesGlobal
 
@@ -62,7 +63,7 @@ class TextDocDelegate(QStyledItemDelegate):
         else:
             painter.save()
             ##default = QStyledItemDelegate.sizeHint(self, option, index)
-            ##print "painter option" , (option.rect.x(),option.rect.y(), default.width(), default.height())
+            ##print("painter option" , (option.rect.x(),option.rect.y(), default.width(), default.height()))
             ##painter.drawRect(option.rect)
             QStyledItemDelegate.paint(self, painter, option, index)
             text = index.model().data(index, Qt.DisplayRole).toString()
@@ -97,7 +98,7 @@ class TextDocDelegate(QStyledItemDelegate):
             painter.restore()
             painter.save()
             if hasMore:
-                #print "Has More", index.row(), index.column()
+                #print("Has More", index.row(), index.column())
                 docMoreNote = QTextDocument()
                 docMoreNote.setPlainText("...")
                 docMoreNote.adjustSize()
@@ -158,19 +159,19 @@ class TextDocDelegate(QStyledItemDelegate):
             hasMore = True
         return QRect(docu_point, docu_croppedSize), hasMore
 
-        ##print "something"
+        ##print("something")
 ##
 ##    def sizeHint(self, option, index):
 ##        default = QStyledItemDelegate.sizeHint(self, option, index)
-##        print "size hint option" , (option.rect.x(),option.rect.y(), default.width(), default.height())
+##        print("size hint option" , (option.rect.x(),option.rect.y(), default.width(), default.height()))
 ##        return QSize(default.width(), default.height())
 
     def setEditorData(self, editor, index):
     # Fetch current data from model.
         value = index.model().data(index, Qt.DisplayRole).toString();
-        #print value
+        #print(value)
 ##        valueDato = index.model().data(index, Qt.EditRole).toPyObject();
-##        print valueDato
+##        print(valueDato)
         ## Set line edit text to current data.
         #editor.setText(value)
         ## Deselect text. (lineEdit)
@@ -187,14 +188,14 @@ class TextDocDelegate(QStyledItemDelegate):
 
 
     def updateEditorGeometry(self, editor, option, index):
-        #print (option.rect.x(),option.rect.y(),editor.sizeHint().width(),editor.sizeHint().height())
+        #print((option.rect.x(),option.rect.y(),editor.sizeHint().width(),editor.sizeHint().height()))
         editor.setGeometry(option.rect)
         return
 
     def eventFilter(self, editor, event):
         if event.type() == QEvent.KeyPress:
-            #print "key: ", event.key(), " mod: ", event.modifiers(), " keyEnter: ", Qt.Key_Enter
-            #print Qt.Key_Enter == event.key() , (event.modifiers() & QtCore.Qt.ShiftModifier == QtCore.Qt.ShiftModifier), ((event.key() == Qt.Key_Return) or (event.key() == Qt.Key_Enter) )
+            #print("key: ", event.key(), " mod: ", event.modifiers(), " keyEnter: ", Qt.Key_Enter)
+            #print(Qt.Key_Enter == event.key() , (event.modifiers() & QtCore.Qt.ShiftModifier == QtCore.Qt.ShiftModifier), ((event.key() == Qt.Key_Return) or (event.key() == Qt.Key_Enter) ))
             #keyEvent = (QKeyEvent)(event);
             if (event.modifiers() & QtCore.Qt.ShiftModifier == QtCore.Qt.ShiftModifier) and \
                             (event.modifiers() & QtCore.Qt.ControlModifier == QtCore.Qt.ControlModifier) and \
@@ -212,7 +213,7 @@ class TextDocDelegate(QStyledItemDelegate):
 
     def muteCloseEditorSignal(self, editor, qEditHint):
         if qEditHint == QStyledItemDelegate.EditPreviousItem or qEditHint == QStyledItemDelegate.EditNextItem:
-            print "akakaka"
+            print("akakaka")
             return
 
 class HighlightingRule:
@@ -232,7 +233,7 @@ class Highlighter(QtGui.QSyntaxHighlighter):
         #self.commentEndExpression = QtCore.QRegExp("\\*/")
 
     def highlightBlock(self, text):
-        #print "checking hight"
+        #print("checking hight")
         #for pattern, format, forColumnNum, forRowNum in highlightRulesGlobal.getAllHighlightRules():
         for (compliledREpattern, format, forColumnNum, forRowNum) in highlightRulesGlobal.getAllHighlightRules():
             if((self.parentColNumber == forColumnNum or forColumnNum==-1 ) and (self.parentRowNumber == forRowNum or forRowNum==-1)):
