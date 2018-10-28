@@ -1,6 +1,7 @@
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from Qt import QtCore, QtGui
+from Qt.QtCore import *
+from Qt.QtGui import *
+from Qt.QtWidgets import QStyledItemDelegate
 #
 # For a checkbox (only and not text) in TableView columns.
 #

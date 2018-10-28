@@ -45,10 +45,10 @@ sip.setapi('QString', 2)
 import msgBoxesStub
 
 import os, sys, shutil
-from PyQt4 import QtCore, QtGui, uic
+from Qt import QtCore, QtGui
 
 try:
-    from PyQt4.QtCore import QString
+    from Qt.QtCore import QString
 except ImportError:
 # we are using Python3 so QString is not defined
     QString = type("")
@@ -56,13 +56,12 @@ from  grabberFromPNG014 import grabberFromPNG
 
 from MISESentencePreview import MyPreviewSentenceDLGWindow
 
-#from PyQt4.QtGui import QPainter, QColor, QPalette, QWidget
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtGui import QCloseEvent
+from Qt.QtCore import *
+from Qt.QtGui import *
+from Qt.QtGui import QCloseEvent
+from Qt.QtWidgets import QMainWindow
 
-
-class MyMainFontDLGWindow(QtGui.QMainWindow):
+class MyMainFontDLGWindow(QMainWindow):
 
     #
     # TODO: Can we make this a parameter for the GUI?
@@ -100,8 +99,8 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
     MISE2_SessionPrefix = 'MISE2_'
 
     def eventFilter(self, object, event):
-        #print "EVENT TYPE: %s VS %s " % (event.__class__.__name__, QtGui.QCloseEvent.__name__)
-        #print "OBJECT: %s VS %s " % (object.__class__.__name__, self.ui.__class__.__name__)
+        #print("EVENT TYPE: %s VS %s " % (event.__class__.__name__, QtGui.QCloseEvent.__name__))
+        #print("OBJECT: %s VS %s " % (object.__class__.__name__, self.ui.__class__.__name__))
         if self.ui.closingFlag  == False and event.__class__ == QtGui.QCloseEvent:
         ## HANDLE EVENT....
             self.closeEvent(event)
@@ -124,9 +123,9 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
 
         # Set up the user interface from Designer.
         uiFontDlgFilePath = os.path.join(self.relPath, self.uiFolderName, self.uiFontsToolFileName)
-        #print uiFontDlgFilePath
+        #print(uiFontDlgFilePath)
         if not os.access(uiFontDlgFilePath, os.F_OK) :
-            print "Could not find the required ui file %s for the Font Tool application. Quiting..." % (self.uiFontsToolFileName)
+            print("Could not find the required ui file %s for the Font Tool application. Quiting..." % (self.uiFontsToolFileName))
             self.tryToCloseWin()
             return
 
@@ -164,7 +163,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
             linenum = 0
             errorLine = False
             for readSessLine in linesLst:
-                ##print readSessLine
+                ##print(readSessLine)
                 linenum+=1
                 errorLine = False
                 try:
@@ -262,7 +261,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
         # TODO: DB initialization (Should happen once, not every time!)
         if not os.access(self.DBFileNameAndRelPath, os.F_OK) :
             #TODO: debug and error message. Show in message box or SessionsErors and quit?
-            #print "CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath)
+            #print("CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath))
             pass
         else:
             conn = sqlite3.connect(self.DBFileNameAndRelPath)
@@ -287,7 +286,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
         index = self.ui.selGameCmBx.findData(pGameId)
         if index < 0:
             #TODO: debug and error message. Show in message box or SessionsErors and quit?
-            #print "Error: Game Id index not found in combobox!"
+            #print("Error: Game Id index not found in combobox!")
             index = 0
         self.ui.selGameCmBx.setCurrentIndex(index) # this will trigger the signal to loadSelectedGameID
         return
@@ -299,7 +298,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
         index = self.ui.selGameCmBx.findText(pGameName)
         if index < 0:
             #TODO: debug and error message. Show in message box or SessionsErors and quit?
-            #print "Error: Game Id index not found in combobox!"
+            #print("Error: Game Id index not found in combobox!")
             index = 0
         self.ui.selGameCmBx.setCurrentIndex(index)
         return
@@ -307,19 +306,19 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
     # will update the self.selGameID. Will not load a new grabber instance (the caller should handle that)
     def loadSelectedGameID(self, selGameName):
         ##debug
-        #print "Loading game id for: %s " % selGameName
+        #print("Loading game id for: %s " % selGameName)
         gameIDFound = False
         for dictKey in self.supportedGames.keys():
             if self.supportedGames[dictKey] == selGameName:
                 self.selGameID = dictKey
                 gameIDFound = True
                 ##debug
-                #print "Loaded %s ID: %d " %(self.supportedGames[dictKey], self.selGameID)
+                #print("Loaded %s ID: %d " %(self.supportedGames[dictKey], self.selGameID))
                 break
         if gameIDFound == False:
             # TODO: Error dialog message
             #TODO: debug and error message. Show in message box or SessionsErors and quit?
-            print "Error! The selected game is not supported! Reverting to %s" % (self.supportedGames[self.defGameID])
+            print("Error! The selected game is not supported! Reverting to %s" % (self.supportedGames[self.defGameID]))
             self.selGameID = self.defGameID
         # also force start of new session!
         # self.newSessionStart()
@@ -368,7 +367,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
     #
     def newSessionStart(self,silentNewSession = False):
 
-        if self.ui.sessionsCmBx.currentIndex() <> 0:
+        if self.ui.sessionsCmBx.currentIndex() != 0:
             self.ui.sessionsCmBx.setCurrentIndex(0) # will cause this function to be called again due to selected item change
             return True
 
@@ -379,16 +378,16 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
 
             l1,ok= QInputDialog.getItem(self.ui,self.tr("Select Game"),self.tr("Game"),supportedGamesNames,0,False)
             ## debug
-            #print l1, ok
+            #print(l1, ok)
             if ok:
-                ##print "OK"
+                ##print("OK")
                 self.previousSessionActive = ""
                 self.setSelectedGameByGameName(l1)
         #        self.saveflag = 0
                 self.dirtyBitflag = 0
-        #        print "currentIndex = %d " % self.ui.sessionsCmBx.currentIndex()
+        #        print("currentIndex = %d " % self.ui.sessionsCmBx.currentIndex())
 
-        #        print "called new. Proceeding due to selected 0 index."
+        #        print("called new. Proceeding due to selected 0 index.")
                 self.clearFieldsExceptSessionBox()
 
                 # TODO: probably there is a better way to destroy any previous myGrabInstance
@@ -401,9 +400,9 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
             self.setSelectedGameByGameId(self.defGameID) # load default game id (when returning from a delete)
     #        self.saveflag = 0
             self.dirtyBitflag = 0
-    #        print "currentIndex = %d " % self.ui.sessionsCmBx.currentIndex()
+    #        print("currentIndex = %d " % self.ui.sessionsCmBx.currentIndex())
 
-    #        print "called new. Proceeding due to selected 0 index."
+    #        print("called new. Proceeding due to selected 0 index.")
             self.clearFieldsExceptSessionBox()
 
             # TODO: probably there is a better way to destroy any previous myGrabInstance
@@ -419,24 +418,24 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
         matchFound = False
         matchedIndex = -1
         if self.ui.sessionsCmBx.currentIndex() <=0:
-            #print "Cannot delete NULL session"
+            #print("Cannot delete NULL session")
             msgBoxesStub.qMsgBoxCritical(self.ui, "Cannot delete", "Cannot delete NULL session!")
             return
 
         selSessName = self.ui.sessionsCmBx.itemText(self.ui.sessionsCmBx.currentIndex())
-        #print "current session name %s" % selSessName
+        #print("current session name %s" % selSessName)
 
         for i in range(0, len(self.sessionsList)):
                 (itSessionName, itSessionParamsLst) = self.sessionsList[i]
                 if itSessionName == selSessName:
                     matchFound = True
                     matchedIndex = i
-                    #print "Found Match"
+                    #print("Found Match")
 
         reply = msgBoxesStub.qMsgBoxQuestion(self.ui, "Delete session", "Are you sure you want to delete the current session (%s) ?"% (selSessName,)  )
         if reply == QtGui.QMessageBox.Yes:
             ## debug
-            #print "Removing session %s" % selSessName
+            #print("Removing session %s" % selSessName)
 
             #  remove the session from the active list . Do we use the matchFound result? or write to file anyway?
             if matchFound:
@@ -459,9 +458,9 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
 ##
 ##
     def loadSelectedSessionFromComboChanged(self, selSessName):
-        if self.previousSessionActive <> "" and  self.previousSessionActive == selSessName: #ignore cases where we fallback to the previous active session, and maintain fields
+        if self.previousSessionActive != "" and  self.previousSessionActive == selSessName: #ignore cases where we fallback to the previous active session, and maintain fields
             return
-        elif self.previousSessionActive <> "" and selSessName == "":
+        elif self.previousSessionActive != "" and selSessName == "":
             ## clear everything. Start new session.
             # TODO: new session
             status = self.newSessionStart()
@@ -473,7 +472,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
 
         elif self.previousSessionActive == "" and selSessName == "":
             self.newSessionStart()
-        elif selSessName <> "":
+        elif selSessName != "":
             self.loadSelectedSession(selSessName)
         return
 
@@ -483,7 +482,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
     # TODO: we need a dirt session bit to avoid resetting or load a new session over a changed session without confirmation
     def loadSelectedSession(self, selSessName):
 
-    ##        print selSessName
+    ##        print(selSessName)
         if selSessName != "":
             for i in range(0, len(self.sessionsList)):
                 (itSessionName, itSessionParamsLst) = self.sessionsList[i]
@@ -512,7 +511,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
                     #
                     origFontFilename = self.ui.openOrigFontTxtBx.text().strip()
                     imageOriginalPNG = self.ui.openFileNameTxtBx.text().strip()
-                    if  origFontFilename <> "" and imageOriginalPNG <> "":
+                    if  origFontFilename != "" and imageOriginalPNG != "":
                         if self.myGrabInstance is not None:
                             self.myGrabInstance.setDasOrigFontFilename(origFontFilename)
                             self.myGrabInstance.setImageOriginalPNG(imageOriginalPNG)
@@ -530,7 +529,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
                         #
                         #
                         # if both expected filenames exist in the same folder then put them in the textboxes.
-                        if expectedFileNameForOutputPNG <> "" and os.path.exists(expectedFileNameForOutputPNG) and expectedFileNameForOutputINFO <> "" and  os.path.exists(expectedFileNameForOutputINFO):
+                        if expectedFileNameForOutputPNG != "" and os.path.exists(expectedFileNameForOutputPNG) and expectedFileNameForOutputINFO != "" and  os.path.exists(expectedFileNameForOutputINFO):
                             self.myGrabInstance.setCopyFontFileName(expectedFileNameForOutputINFO)
                             self.myGrabInstance.setCopyPNGFileName(expectedFileNameForOutputPNG)
 
@@ -540,7 +539,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
                             self.ui.origPNGFileDimensionsTxtBx.setText(self.myGrabInstance.getImagePropertiesInfo(True))
                             self.ui.copyPNGFileDimensionsTxtBx.setText(self.myGrabInstance.getImagePropertiesInfo(False))
 
-                            if self.ui.innerSpaceLtoLpxTxtBx.text().strip <> "" and self.ui.InnerSpaceTtoTpxTxtBx.text().strip() <> "":
+                            if self.ui.innerSpaceLtoLpxTxtBx.text().strip != "" and self.ui.InnerSpaceTtoTpxTxtBx.text().strip() != "":
                                 minSpaceBetweenLettersInRowLeftToLeft =   int(self.ui.innerSpaceLtoLpxTxtBx.text())
                                 minSpaceBetweenLettersInColumnTopToTop =   int(self.ui.InnerSpaceTtoTpxTxtBx.text())
                                 self.myGrabInstance.setMinSpaceBetweenLettersInRowLeftToLeft(minSpaceBetweenLettersInRowLeftToLeft)
@@ -624,14 +623,14 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
                 if itSessionName == sessionName:
                     matchFound = True
                     ## Debug
-                    #print "Overwriting session %s" % (itSessionName,)
+                    #print("Overwriting session %s" % (itSessionName,))
                     # TODO: prompt here?
                     reply = msgBoxesStub.qMsgBoxQuestion(self.ui, "Overwrite session", "Session %s will be overwritten with the current session's data. Do you want to continue?"% (itSessionName,) )
                     if reply == QtGui.QMessageBox.Yes:
                         self.sessionsList[i] = (itSessionName, atmpLst)
                     else:
                         ## Debug
-                        #print "Save session %s was canceled!"% (itSessionName,)
+                        #print("Save session %s was canceled!"% (itSessionName,))
                         return
                     break
             if matchFound == False:
@@ -672,7 +671,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
         origFontFilename = self.ui.openOrigFontTxtBx.text().strip()
         imageOriginalPNG = self.ui.openFileNameTxtBx.text().strip()
 
-        if  origFontFilename <> "" and imageOriginalPNG <> "":
+        if  origFontFilename != "" and imageOriginalPNG != "":
             if self.myGrabInstance is not None:
                 self.myGrabInstance.setDasOrigFontFilename(origFontFilename)
                 self.myGrabInstance.setImageOriginalPNG(imageOriginalPNG)
@@ -682,7 +681,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
             else:
                 self.myGrabInstance = grabberFromPNG(self.tryEncoding, self.selGameID, origFontFilename, imageOriginalPNG)
         else:
-            #print "Bad Arguments for outlining!"
+            #print("Bad Arguments for outlining!")
             errMsg = "Bad Arguments for outlining!"
             msgBoxesStub.qMsgBoxCritical(self.ui, "Error", errMsg)
             return
@@ -704,7 +703,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
         copyFontFileName = self.ui.OutputFontFileTxtBx.text().strip()
         copyPNGFileName =  self.ui.OutputPngFileTxtBx.text().strip()
 
-        if  origFontFilename <> "" and  imageOriginalPNG  <> "" and copyFontFileName <> "" and copyPNGFileName <> "":
+        if  origFontFilename != "" and  imageOriginalPNG  != "" and copyFontFileName != "" and copyPNGFileName != "":
             if self.myGrabInstance is not None:
                 self.myGrabInstance.setCopyFontFileName(copyFontFileName)
                 self.myGrabInstance.setCopyPNGFileName(copyPNGFileName)
@@ -715,7 +714,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
                 self.myGrabInstance.setCopyPNGFileName(copyPNGFileName)
                 self.myGrabInstance.setReconstructEntireFont(reconstructEntireFontFlag)
         else:
-            #print "Bad Arguments for outlining!"
+            #print("Bad Arguments for outlining!")
             errMsg = "Bad Arguments for outlining!"
             msgBoxesStub.qMsgBoxCritical(self.ui, "Error", errMsg)
             return
@@ -885,9 +884,9 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
         customBaseLineOffset = self.ui.baselineOffsetSpinBox.value()
         reconstructEntireFontFlag = True if self.ui.ReconstructEntireFoneCkBx.isChecked() else False
 
-        if  origFontFilename <> "" and imageOriginalPNG <> "" and imageRowFilePNG <> "" and minSpaceBetweenLettersInRowLeftToLeft > 0 and minSpaceBetweenLettersInColumnTopToTop >0:
+        if  origFontFilename != "" and imageOriginalPNG != "" and imageRowFilePNG != "" and minSpaceBetweenLettersInRowLeftToLeft > 0 and minSpaceBetweenLettersInColumnTopToTop >0:
             if self.myGrabInstance is not None:
-#                print "%s %s %s %d %d" % (origFontFilename, imageOriginalPNG, imageRowFilePNG, minSpaceBetweenLettersInRowLeftToLeft, minSpaceBetweenLettersInColumnTopToTop)
+#                print("%s %s %s %d %d" % (origFontFilename, imageOriginalPNG, imageRowFilePNG, minSpaceBetweenLettersInRowLeftToLeft, minSpaceBetweenLettersInColumnTopToTop))
                 self.myGrabInstance.setDasOrigFontFilename(origFontFilename)
                 self.myGrabInstance.setImageOriginalPNG(imageOriginalPNG)
                 self.myGrabInstance.setImageRowFilePNG(imageRowFilePNG)
@@ -968,7 +967,7 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
                     index = lm.index(rowi, 0, QModelIndex())
                     if rowi < self.myGrabInstance.lettersInOriginalFontFile:
                         lm.setData(index, unicode(str(outlinesList[rowi][7]),self.origEncoding))
-                        #print unicode(str(outlinesList[rowi][7]),self.origEncoding)
+                        #print(unicode(str(outlinesList[rowi][7]),self.origEncoding))
                     else:
                         lm.setData(index, unicode(str(outlinesList[rowi][7]),self.myGrabInstance.activeEncoding))
                     for columni in range(0,7):
@@ -998,17 +997,17 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
                 myASCIIStringKern = unicode.encode("%s" % datoTmpKern, self.myGrabInstance.activeEncoding)
                 tmpintIndnt = int(myASCIIStringIndnt)
                 tmpintKern = int(myASCIIStringKern)
-##                print "char id: %d - Indent= %d, Kern= %d" % (rowi+1, tmpintIndnt, tmpintKern)
+##                print("char id: %d - Indent= %d, Kern= %d" % (rowi+1, tmpintIndnt, tmpintKern))
                 newCharAttributesLst.append((rowi, tmpintIndnt, tmpintKern))
             if len(newCharAttributesLst) == plithosOfImportedChars:
-##                print "length of list = %d " % len(newCharAttributesLst)
+##                print("length of list = %d " % len(newCharAttributesLst))
                 self.myGrabInstance.writeBackCharProperties(newCharAttributesLst)
 # TODO: return error code and info alert!
         return
 
     def copyToGameDir(self):
         ## debug
-        #print "Keep backup checkbox is {0}".format(self.ui.BkpOrigFilesInGameDirCkBx.isChecked())
+        #print("Keep backup checkbox is {0}".format(self.ui.BkpOrigFilesInGameDirCkBx.isChecked()))
         msgBoxesStub.qMsgBoxInformation(self.ui, "Not yet implemented", "Function not yet implemented!")
         return
 ##
@@ -1025,15 +1024,15 @@ class MyMainFontDLGWindow(QtGui.QMainWindow):
          ( (origFontFilename is None or origFontFilename == '' or imageOriginalPNG is None or imageOriginalPNG =='') \
             and \
             (copyFontFileName is None or copyFontFileName == '' or copyPNGFileName is None or copyPNGFileName =='') ):
-            ##print "Invalid arguments were given for the initialization of preview Sentence dialogue"
+            ##print("Invalid arguments were given for the initialization of preview Sentence dialogue")
             msgBoxesStub.qMsgBoxCritical(self.ui, "Error", "Invalid arguments were given for the initialization of preview Sentence dialogue")
             return
 
         ##currentFontFile = ''
         uiSentencePreviewFilePath = os.path.join(self.relPath, self.uiFolderName, self.uiSentencePreviewFileName)
-        #print uiFontDlgFilePath
+        #print(uiFontDlgFilePath)
         if not os.access(uiSentencePreviewFilePath, os.F_OK) :
-            ##print "Could not find the required ui file %s for the Sentence Preview Dialogue." % (self.uiSentencePreviewFileName)
+            ##print("Could not find the required ui file %s for the Sentence Preview Dialogue." % (self.uiSentencePreviewFileName))
             msgBoxesStub.qMsgBoxCritical(self.ui, "Error", "Could not find the required ui file %s for the Sentence Preview Dialogue." % (self.uiSentencePreviewFileName))
             return
 

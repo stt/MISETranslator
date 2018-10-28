@@ -5,9 +5,9 @@
 #               keeps and notifies a list of "watcher" highlighters (calls their re-highlight)
 # TODO: maybe make it a singleton ?
 #-------------------------------------------------------------------------------
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from Qt import QtCore, QtGui
+from Qt.QtCore import *
+from Qt.QtGui import *
 
 _hlmodul_highlightingRules = []
 _hlmodul_searchhighlightingRule = []  # just one rule, but with Column Index to match too! (or -1 to match everywhere)

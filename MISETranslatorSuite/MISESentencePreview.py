@@ -12,7 +12,7 @@
 import re
 from struct import *
 import sqlite3
-import Image
+from PIL import Image
 
 # This is only needed for Python v2 but is harmless for Python v3.
 import sip
@@ -20,22 +20,21 @@ sip.setapi('QString', 2)
 import msgBoxesStub
 
 import os, sys, shutil
-from PyQt4 import QtCore, QtGui, uic
+from Qt import QtCore, QtGui, QtCompat
 
 try:
-    from PyQt4.QtCore import QString
+    from Qt.QtCore import QString
 except ImportError:
 # we are using Python3 so QString is not defined
     QString = type("")
 from  grabberFromPNG014 import grabberFromPNG
 
-#from PyQt4.QtGui import QPainter, QColor, QPalette, QWidget
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtGui import QCloseEvent
+from Qt.QtCore import *
+from Qt.QtGui import *
+from Qt.QtGui import QCloseEvent
+from Qt.QtWidgets import QMainWindow
 
-
-class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
+class MyPreviewSentenceDLGWindow(QMainWindow):
 
     ##tryEncoding = 'windows-1253'
     greekEncoding = 'windows-1253'
@@ -97,7 +96,7 @@ class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
          ( (pselectedOrigFontFile is None or pselectedOrigFontFile == '' or pselectedOrigPngFile is None or pselectedOrigPngFile =='') \
             and \
             (pselectedExtendedFontFile is None or pselectedExtendedFontFile == '' or pselectedExtendedPngFile is None or pselectedExtendedPngFile =='') ):
-            print "Invalid arguments were given for the initialization of preview Sentence dialogue"
+            print("Invalid arguments were given for the initialization of preview Sentence dialogue")
             self.tryToCloseWin()
             return
         else:
@@ -113,13 +112,13 @@ class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
 
         # Set up the user interface from Designer.
         uiSentencePreviewFilePath = os.path.join(self.relPath, self.uiFolderName, self.uiSentencePreviewFileName)
-        #print uiFontDlgFilePath
+        #print(uiFontDlgFilePath)
         if not os.access(uiSentencePreviewFilePath, os.F_OK) :
-            print "Could not find the required ui file %s for the Sentence Preview Dialogue." % (self.uiSentencePreviewFileName)
+            print("Could not find the required ui file %s for the Sentence Preview Dialogue." % (self.uiSentencePreviewFileName))
             self.tryToCloseWin()
             return
 
-        self.ui = uic.loadUi(uiSentencePreviewFilePath)
+        self.ui = QtCompat.uic.loadUi(uiSentencePreviewFilePath)
         self.ui.show()
 
         if not os.access(self.DBFileNameAndRelPath, os.F_OK) :
@@ -164,7 +163,7 @@ class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
 
         self.fontMode = self.getFontModeFromFileParams()
         if self.fontMode == self.ERROR_FONT_FILE_ARGS:
-            print "Could not detect font file status. Quiting"
+            print("Could not detect font file status. Quiting")
             self.tryToCloseWin()
             return
 
@@ -198,14 +197,14 @@ class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
 ##
 ##
     def loadSelectedBGFromComboChanged(self, selBgName):
-        #print "lallala"
+        #print("lallala")
         #if self.scene is not None:
         #    self.scene.clear()
         #self.scene = QtGui.QGraphicsScene()
         foundSelBg = False
-        #print selBgName
+        #print(selBgName)
         for itemBg in self.availBackgroundsLst:
-            #print itemBg[0]
+            #print(itemBg[0])
             if(itemBg[0] == selBgName):
                 foundSelBg = True
                 break
@@ -226,10 +225,10 @@ class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
         del lettersToPrintLst[:]
 
         if self.listOfCharPngProperties is None or len(self.listOfCharPngProperties) <=0:
-            #print "No items detected as drawn characters!"
+            #print("No items detected as drawn characters!")
             msgBoxesStub.qMsgBoxInformation(self.ui, "Info", "No items detected as drawn characters!")
             return
-        #print "Active Encoding: %s. Game mode %d" % (self.activeEnc,self.selGameID)
+        #print("Active Encoding: %s. Game mode %d" % (self.activeEnc,self.selGameID))
 
         stringsList = []
         del stringsList [:]
@@ -245,14 +244,14 @@ class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
 
             for asciiChar in myLstChars:
                 if asciiChar == '\x00' or asciiChar == '\x0a':
-                    #print "EOS"
-                    lettersToPrintLst.append((-1,-1,-1,-1,-1,-1,-1, '\x00')) ## should be used as special case to print new line in the preview screen!
+                    #print("EOS")
+                    lettersToPrintLst.append((-1,-1,-1,-1,-1,-1,-1, '\x00')) ## should be used as special case to print(new line in the preview screen!)
                 else:
                     if(self.pngIndexOfCharCode(asciiChar) < len(self.listOfCharPngProperties)):
-                        #print (asciiChar, ord(asciiChar), self.pngIndexOfCharCode(asciiChar), self.listOfCharPngProperties[self.pngIndexOfCharCode(asciiChar)] )
+                        #print((asciiChar, ord(asciiChar), self.pngIndexOfCharCode(asciiChar), self.listOfCharPngProperties[self.pngIndexOfCharCode(asciiChar)] ))
                         lettersToPrintLst.append(self.listOfCharPngProperties[self.pngIndexOfCharCode(asciiChar)])
                     else:
-                        #print (asciiChar, ord(asciiChar), 0, self.listOfCharPngProperties[0] )
+                        #print((asciiChar, ord(asciiChar), 0, self.listOfCharPngProperties[0] ))
                         lettersToPrintLst.append(self.listOfCharPngProperties[0] )
 
         self.printInPreviewScreen(lettersToPrintLst)
@@ -281,21 +280,21 @@ class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
         errorFound = False
         if os.access(pngfile, os.F_OK) :
             try:
-                ##print pngfile
+                ##print(pngfile)
                 im = Image.open(pngfile)
             except:
                 errMsg = "Could not open appropriate png font file!"
-                print "Unexpected error:", sys.exc_info()[0]
-                print errMsg
+                print("Unexpected error:", sys.exc_info()[0])
+                print(errMsg)
                 errorFound = True
         else:
             errMsg = "Could not access appropriate png font file!"
-            print errMsg
+            print(errMsg)
             errorFound = True
 
         if not errorFound:
             ##debug
-            #print pngfile, im.format, "%dx%d" % im.size, im.mode
+            #print(pngfile, im.format, "%dx%d" % im.size, im.mode)
             w1, h1 = im.size
             # we need  an in-mem image!!
 
@@ -362,12 +361,12 @@ class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
 ##
 ##                    #maskSubImage.putdata(pix) # not needed. The data is altered!
 
-                    ##print   charSubImage
+                    ##print(  charSubImage)
                     charPositionCoords = (colTopToContinuePx,
                                             rowTopToContinuePx,
                                             colTopToContinuePx + 1 + tmpColEnd - tmpColStart,
                                             rowTopToContinuePx + 1 + tmpRowEnd - tmpRowStart )
-                    #print tmpChar, (tmpColStart, tmpRowStart, tmpColEnd+1, tmpRowEnd+1), charPositionCoords
+                    #print(tmpChar, (tmpColStart, tmpRowStart, tmpColEnd+1, tmpRowEnd+1), charPositionCoords)
                     # 3rd paste option is a mask to keep the transparency (we use the same image as mask).
                     imPreviewSentence.paste(charSubImage, charPositionCoords, maskSubImage)
                     colTopToContinuePx += tmpKerningLetter
@@ -517,11 +516,11 @@ class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
         errorFound = False
         retVal = self.ERROR_FONT_FILE_ARGS
         # by priority first get the extended files if available (then fallback to originals)
-        if  self.selCopyFontFile is not None and  self.selCopyFontFile <> ""  and  self.selCopyPngFile  is not None and  self.selCopyPngFile:
+        if  self.selCopyFontFile is not None and  self.selCopyFontFile != ""  and  self.selCopyPngFile  is not None and  self.selCopyPngFile:
             self.localGrabInstance.setCopyFontFileName(self.selCopyFontFile)
             self.localGrabInstance.setCopyPNGFileName(self.selCopyPngFile)
             retVal = self.EXTENDED_FONT_FILE_ARGS
-        elif self.selOrigFontFile is not None and  self.selOrigFontFile <> ""  and  self.selOrigPngFile  is not None and  self.selOrigPngFile:
+        elif self.selOrigFontFile is not None and  self.selOrigFontFile != ""  and  self.selOrigPngFile  is not None and  self.selOrigPngFile:
             self.localGrabInstance.setDasOrigFontFilename(self.selOrigFontFile)
             self.localGrabInstance.setImageOriginalPNG(self.selOrigPngFile)
             retVal = self.ORIGINAL_FONT_FILE_ARGS
@@ -561,16 +560,16 @@ class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
                     self.indexFromAsciiOrdToPngIndex.append(tmpIntReadTuple[0])
                 openedFontFile.close()
                 retVal = self.indexFromAsciiOrdToPngIndex
-                ##print "########################\n########################\n########################"
-                ##print retVal
-                ##print "########################\n########################\n########################"
+                ##print("########################\n########################\n########################")
+                ##print(retVal)
+                ##print("########################\n########################\n########################")
                 return retVal
             except:
-                print "Unexpected error:", sys.exc_info()[0]
+                print("Unexpected error:", sys.exc_info()[0])
                 errorFound = True
                 return retVal
         else:
-            print "Font file not found!"
+            print("Font file not found!")
             errorFound = True
             return retVal
 
@@ -586,7 +585,7 @@ class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
         endOfStringNullChar = -1
         errorFound = False
         if self.indexFromAsciiOrdToPngIndex is not None and ord(pByteCode) < len(self.indexFromAsciiOrdToPngIndex):
-            ##print ord(pByteCode)
+            ##print(ord(pByteCode))
             if pByteCode == '\x00' or pByteCode == '\x0a':
                 return endOfStringNullChar
             else:
@@ -632,17 +631,17 @@ class MyPreviewSentenceDLGWindow(QtGui.QMainWindow):
 
         # epistrofi sth routina pou bazei tous pragmatika special xarakthres pali sto string
         if atLeastOneSpecialCharWasDetected:
-    #        print "listOfSpecialChars %s" % listOfSpecialChars
-    #        print "listOfpos %s" % posOfSpecialChars
+    #        print("listOfSpecialChars %s" % listOfSpecialChars)
+    #        print("listOfpos %s" % posOfSpecialChars)
     #            remadeCharList = list(remadeQuoteString)
             for littleI in range(0, len(posOfSpecialChars)):
                 translatedTextAsCharsList2[posOfSpecialChars[littleI]] = listOfSpecialChars[littleI]
-    #        print "remadeCharList %s" % remadeCharList
+    #        print("remadeCharList %s" % remadeCharList)
     #            translatedTextAsCharsList2 = remadeCharList
         translatedTextAsCharsList2.append('\x00')
-        ##print "START OF translatedTextAsCharsList2: "
-        ##print translatedTextAsCharsList2
-        ##print "END OF translatedTextAsCharsList2"
+        ##print("START OF translatedTextAsCharsList2: ")
+        ##print(translatedTextAsCharsList2)
+        ##print("END OF translatedTextAsCharsList2")
         return translatedTextAsCharsList2
 
 ##

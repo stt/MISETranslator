@@ -4,8 +4,9 @@
 # Created by Praetorian (ShadowNate) for Classic Adventures in Greek
 # classic.adventures.in.greek@gmail.com
 #
+from __future__ import print_function
 import os, sys, shutil
-import Image
+from PIL import Image
 from struct import *
 import re
 import sqlite3
@@ -26,11 +27,11 @@ import sqlite3
 def checkForJSONSettingsColumnAndAddIfNotExists(pDBFileNameAndRelPath):
     if not os.access(pDBFileNameAndRelPath, os.F_OK) :
         #debug
-        print "CRITICAL ERROR: The database file %s could not be found!!" % (pDBFileNameAndRelPath)
+        print("CRITICAL ERROR: The database file %s could not be found!!" % (pDBFileNameAndRelPath))
     else:
         conn = sqlite3.connect(pDBFileNameAndRelPath)
         c = conn.cursor()
-        ##print "checking for JSON"
+        ##print("checking for JSON")
         c.execute('''PRAGMA table_info('settings')''')
         foundJSONSettingsColumn = False
         for row in c:
@@ -39,7 +40,7 @@ def checkForJSONSettingsColumnAndAddIfNotExists(pDBFileNameAndRelPath):
                     foundJSONSettingsColumn = True
                     break
         if not foundJSONSettingsColumn:
-            ##print "Not found JSON"
+            ##print("Not found JSON")
             c.execute('''ALTER TABLE settings ADD column jsonsettings TEXT DEFAULT ""''')
         # Save (commit) any changes # probably select queries do not need commit.
         conn.commit()
@@ -50,10 +51,10 @@ class grabberFromPNG:
     origEncoding = 'windows-1252'
     defaultTargetLang = "greek"
     defaultTargetEncoding = 'windows-1253' #greek
-    defaultTargetEncodingUnicode = unicode(defaultTargetEncoding, 'utf-8')
+    defaultTargetEncodingUnicode = str.encode(defaultTargetEncoding, 'utf-8')
     allOfGreekChars = "ΆΈΉΊΌΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώ"
     targetEncoding = 'windows-1253'
-    targetEncodingUnicode = unicode(targetEncoding, 'utf-8')
+    targetEncodingUnicode = str.encode(targetEncoding, 'utf-8')
     overrideEncodingTextFile = u'overrideEncoding.txt'
     DBFileName = u'trampol.sqlite'
     relPath = u'.'
@@ -92,7 +93,7 @@ class grabberFromPNG:
     # TODO: read from an override file if it exists. Filename should be overrideEncoding.txt (overrideEncodingTextFile)
     if os.access(overrideEncodingFileRelPath, os.F_OK) :
         ## debug
-        #print "Override encoding file found: {0}.".format(overrideEncodingFileRelPath)
+        #print("Override encoding file found: {0}.".format(overrideEncodingFileRelPath))
         overEncodFile = open(overrideEncodingFileRelPath, 'r')
         linesLst = overEncodFile.readlines()
         overEncodFile.close()
@@ -105,10 +106,10 @@ class grabberFromPNG:
                 involvedTokensLst = re.findall("[^\t\n]+",readEncodLine )
                 if len(involvedTokensLst) == 2:
                     try:
-                        targetEncodingUnicode = unicode(involvedTokensLst[0], 'utf-8')
-                        targetEncoding = unicode.encode("%s" % targetEncodingUnicode, origEncoding)
-                        targetLangOrderAndListOfForeignLettersStrUnicode = unicode(involvedTokensLst[1], 'utf-8')
-                        print targetLangOrderAndListOfForeignLettersStrUnicode
+                        targetEncodingUnicode = str.encode(involvedTokensLst[0], 'utf-8')
+                        targetEncoding = str.encode("%s" % targetEncodingUnicode, origEncoding)
+                        targetLangOrderAndListOfForeignLettersStrUnicode = involvedTokensLst[1]  #str.encode(involvedTokensLst[1], 'utf-8')
+                        print(targetLangOrderAndListOfForeignLettersStrUnicode)
                         overrideFailed = False
                     except:
                         overrideFailed = True
@@ -117,29 +118,29 @@ class grabberFromPNG:
                 break #only read first line
     else:
         ## debug
-        #print "Override encoding file not found: {0}.".format(overrideEncodingFileRelPath)
-        #print "To override the default encoding {0} use an override encoding file with two tab separated entries: encoding (ascii) and characters-list. Convert to UTF-8 without BOM and save. For example:".format(defaultTargetEncoding)
-        #print "windows-1252\tABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+        #print("Override encoding file not found: {0}.".format(overrideEncodingFileRelPath))
+        #print("To override the default encoding {0} use an override encoding file with two tab separated entries: encoding (ascii) and characters-list. Convert to UTF-8 without BOM and save. For example:".format(defaultTargetEncoding))
+        #print("windows-1252\tABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
         pass
 
     if overrideFailed:
         ## debug
-        #print "Override encoding file FAILED. Initializing for {0}...".format(defaultTargetLang)
+        #print("Override encoding file FAILED. Initializing for {0}...".format(defaultTargetLang))
         targetEncoding = defaultTargetEncoding
         targetEncodingUnicode = defaultTargetEncodingUnicode
-        targetLangOrderAndListOfForeignLettersStrUnicode = unicode(allOfGreekChars, 'utf-8')
-        #print targetLangOrderAndListOfForeignLettersStrUnicode
+        targetLangOrderAndListOfForeignLettersStrUnicode = allOfGreekChars #str.encode(allOfGreekChars, 'utf-8')
+        #print(targetLangOrderAndListOfForeignLettersStrUnicode)
 
     try:
-        targetLangOrderAndListOfForeignLettersStr = unicode.encode("%s" % targetLangOrderAndListOfForeignLettersStrUnicode, targetEncoding)
+        targetLangOrderAndListOfForeignLettersStr = targetLangOrderAndListOfForeignLettersStrUnicode #str.encode("%s" % targetLangOrderAndListOfForeignLettersStrUnicode, targetEncoding)
     except:
         ## debug
-        #print "Override encoding file FAILED. Initializing for {0}...".format(defaultTargetLang)
+        #print("Override encoding file FAILED. Initializing for {0}...".format(defaultTargetLang))
         targetEncoding = defaultTargetEncoding
         targetEncodingUnicode = defaultTargetEncodingUnicode
-        targetLangOrderAndListOfForeignLettersStrUnicode = unicode(allOfGreekChars, 'utf-8')
-        targetLangOrderAndListOfForeignLettersStr = unicode.encode("%s" % targetLangOrderAndListOfForeignLettersStrUnicode, targetEncoding)
-        #print targetLangOrderAndListOfForeignLettersStrUnicode
+        targetLangOrderAndListOfForeignLettersStrUnicode = str.encode(allOfGreekChars, 'utf-8')
+        targetLangOrderAndListOfForeignLettersStr = str.encode("%s" % targetLangOrderAndListOfForeignLettersStrUnicode, targetEncoding)
+        #print(targetLangOrderAndListOfForeignLettersStrUnicode)
 
     targetLangOrderAndListOfForeignLetters = list(targetLangOrderAndListOfForeignLettersStr)
 
@@ -411,7 +412,7 @@ class grabberFromPNG:
 
         if not os.access(self.DBFileNameAndRelPath, os.F_OK) :
             #debug
-            print "CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath)
+            print("CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath))
         else:
             checkForJSONSettingsColumnAndAddIfNotExists(self.DBFileNameAndRelPath)
             conn = sqlite3.connect(self.DBFileNameAndRelPath)
@@ -423,22 +424,22 @@ class grabberFromPNG:
             retrievedEncoding= ""
             retrievedOrderAndListOfForeignLettersStr = ""
             for row in c:
-                retrievedEncoding=unicode.encode("%s" % row[0],self.origEncoding)
+                retrievedEncoding=str.encode("%s" % row[0],self.origEncoding)
                 if self.activeEncoding == retrievedEncoding:
                     foundSelectedEncoding = True
                     break
             #TODO: prompt with ERROR. Revert to first found?
             if foundSelectedEncoding == False:
                 #debug
-                print "CRITICAL ERROR: No encoding was found in the DB, matching the selected one! Reverting to {0} encoding and {0} string".format(self.defaultTargetLang)
+                print("CRITICAL ERROR: No encoding was found in the DB, matching the selected one! Reverting to {0} encoding and {0} string".format(self.defaultTargetLang))
                 self.activeEncoding = self.defaultTargetEncoding
                 self.activeOrderAndListOfForeignLettersStr = self.targetLangOrderAndListOfForeignLettersStr
             else:
                 self.activeEncoding = retrievedEncoding # reduntand but included for readability
-                retrievedOrderAndListOfForeignLettersStr= unicode.encode("%s" % row[1], self.activeEncoding)
+                retrievedOrderAndListOfForeignLettersStr= str.encode("%s" % row[1], self.activeEncoding)
                 if retrievedOrderAndListOfForeignLettersStr is None or retrievedOrderAndListOfForeignLettersStr.strip() == "":
                     #debug
-                    print "CRITICAL ERROR: No valid string of characters was found in the DB for the selected encoding: {1}! Reverting to {0} encoding and {0} string!".format(self.defaultTargetLang, self.activeEncoding)
+                    print("CRITICAL ERROR: No valid string of characters was found in the DB for the selected encoding: {1}! Reverting to {0} encoding and {0} string!".format(self.defaultTargetLang, self.activeEncoding))
                     self.activeEncoding = self.defaultTargetEncoding
                     self.activeOrderAndListOfForeignLettersStr = self.targetLangOrderAndListOfForeignLettersStr
                 else:
@@ -447,10 +448,10 @@ class grabberFromPNG:
             tmpListOfForeignLettersStrNew = ''.join([tmpC for i, tmpC in enumerate(self.activeOrderAndListOfForeignLettersStr) if not tmpC in self.activeOrderAndListOfForeignLettersStr[:i]])
             if len(list(tmpListOfForeignLettersStrNew)) != len(list(self.activeOrderAndListOfForeignLettersStr)):
                 #debug
-                print "CRITICAL ERROR: Duplicate Characters Found in the imported foreign char string! Duplicate characters were removed! Please use the new string now: %s!" % (tmpListOfForeignLettersStrNew)
+                print("CRITICAL ERROR: Duplicate Characters Found in the imported foreign char string! Duplicate characters were removed! Please use the new string now: %s!" % (tmpListOfForeignLettersStrNew))
             self.activeOrderAndListOfForeignLettersStr = tmpListOfForeignLettersStrNew
             #debug
-            #print "Using encoding: %s and string: %s " % (self.activeEncoding, self.activeOrderAndListOfForeignLettersStr) #success!
+            #print("Using encoding: %s and string: %s " % (self.activeEncoding, self.activeOrderAndListOfForeignLettersStr) #success!)
 
             self.orderAndListOfForeignLetters = list(self.activeOrderAndListOfForeignLettersStr)
 
@@ -458,18 +459,18 @@ class grabberFromPNG:
             self.supportedGames = {}
             c.execute("select ID, Name from supportedGames")
             for row in c:
-                self.supportedGames[int(row[0])]=unicode.encode("%s" % row[1],self.origEncoding)
+                self.supportedGames[int(row[0])]=str.encode("%s" % row[1],self.origEncoding)
                 if self.selectedGameID == int(row[0]):
                     foundSelectedGame = True
                     self.lettersInOriginalFontFile = int(self.lettersInOriginalFontFileDict[self.selectedGameID])
                     break
             if foundSelectedGame == False:
                 #debug
-                print "CRITICAL ERROR: The selected game was not found in the DB! Reverting to SoMI:SE!"
+                print("CRITICAL ERROR: The selected game was not found in the DB! Reverting to SoMI:SE!")
                 self.selectedGameID = self.SOMISE_GameID
                 self.lettersInOriginalFontFile = int(self.lettersInOriginalFontFileDict[self.SOMISE_GameID])
             #debug
-            #print "Selected GameID: %d, Desc: %s, Letters in orig file: %d " % (self.selectedGameID, self.supportedGames[self.selectedGameID], self.lettersInOriginalFontFile)
+            #print("Selected GameID: %d, Desc: %s, Letters in orig file: %d " % (self.selectedGameID, self.supportedGames[self.selectedGameID], self.lettersInOriginalFontFile))
 
             self.listOfEmptySlotsForLetters = []
             del self.listOfEmptySlotsForLetters[:]
@@ -477,33 +478,33 @@ class grabberFromPNG:
             for row in c:
                 self.listOfEmptySlotsForLetters.append(int(row[2]))
             #debug
-            #print "List of Empty Slots For Letters:"
-            #print self.listOfEmptySlotsForLetters
-            #print "Empty Slots: %d" % len(self.listOfEmptySlotsForLetters)
+            #print("List of Empty Slots For Letters:")
+            #print(self.listOfEmptySlotsForLetters)
+            #print("Empty Slots: %d" % len(self.listOfEmptySlotsForLetters))
 
-            #print "Total foreign letters: %d" % (len(self.orderAndListOfForeignLetters))
-            #print "Total new letters that can be added are %d for %s!" % (len(self.listOfEmptySlotsForLetters), self.supportedGames[self.selectedGameID])
+            #print("Total foreign letters: %d" % (len(self.orderAndListOfForeignLetters)))
+            #print("Total new letters that can be added are %d for %s!" % (len(self.listOfEmptySlotsForLetters), self.supportedGames[self.selectedGameID]))
             if len(self.listOfEmptySlotsForLetters) < len(self.orderAndListOfForeignLetters) :
                 #debug
-                print "CRITICAL ERROR: There are not enough slots to support all of the imported foreign characters! The list of new characters will be truncated to %d characters" % (len(self.listOfEmptySlotsForLetters))
+                print("CRITICAL ERROR: There are not enough slots to support all of the imported foreign characters! The list of new characters will be truncated to %d characters" % (len(self.listOfEmptySlotsForLetters)))
                 self.orderAndListOfForeignLetters = self.orderAndListOfForeignLetters[:len(self.listOfEmptySlotsForLetters)]
                 #debug
-                print "Please use the new string now: %s" % ''.join(self.orderAndListOfForeignLetters)
+                print("Please use the new string now: %s" % ''.join(self.orderAndListOfForeignLetters))
 
             self.replacePngIndexForOrigChars = []
             del self.replacePngIndexForOrigChars[:]
             c.execute("select GameID, IndxPngCharTable, OrigAsciiCharWin1252 from pngIndexForOriginalChars where GameID=? order by IndxPngCharTable", ("%d" % (self.selectedGameID) , ))
             for row in c:
                 self.replacePngIndexForOrigChars.append(chr(int(row[2])))
-##                print chr(int(row[2]))
+##                print(chr(int(row[2])))
 
             self.bringPngIndexForOrigChar = dict(zip(self.replacePngIndexForOrigChars, range(0, len(self.replacePngIndexForOrigChars) -1)) )
-            ##print "bringPnhIndexForOrigchar"
-            ##print self.bringPngIndexForOrigChar
+            ##print("bringPnhIndexForOrigchar")
+            ##print(self.bringPngIndexForOrigChar)
             #debug
-            #print "List of PNG Index Chars:"
-            #print self.replacePngIndexForOrigChars
-            #print "PNG Index items: %d" % len(self.replacePngIndexForOrigChars)
+            #print("List of PNG Index Chars:")
+            #print(self.replacePngIndexForOrigChars)
+            #print("PNG Index items: %d" % len(self.replacePngIndexForOrigChars))
 
             #
             # Calculate expected positions of the foreign added chars, based on their ascii value. If conflict with existing character, then assign an empty slot from elsewhere (from available ones).
@@ -526,7 +527,7 @@ class grabberFromPNG:
                             break
                     if newAddrDueToConflict==0:
                         # TODO: Report this critical error in the GUI!!!
-                        print "Error! Sorry, could not fit any more letters in the font file! Total letters that can be added are %d!" % len(self.listOfEmptySlotsForLetters)
+                        print("Error! Sorry, could not fit any more letters in the font file! Total letters that can be added are %d!" % len(self.listOfEmptySlotsForLetters))
 
 
         #   from: decimal address in font file for the greek chars (addresses for the table of pointers to the png table) To -> hex index of PNG records table,  (int(dec) to int (hex))
@@ -538,20 +539,20 @@ class grabberFromPNG:
 
             #Not Used here but necessary for translation (from greek char (ASCII Hex) to special replacement char order (hex int).):
             # automatically calculated
-            self.replaceAsciiIndexWithValForTranslation = dict(zip(self.orderAndListOfForeignLetters, (list (( (k - 0x1C)/2)+1 for k in self.listOfOffsetsForForeignLetters))))
+            self.replaceAsciiIndexWithValForTranslation = dict(zip(self.orderAndListOfForeignLetters, (list (( (k - 0x1C)//2)+1 for k in self.listOfOffsetsForForeignLetters))))
             #
             # The reverse is ALSO needed (auxiliary):
             #
-            self.rev_replaceAsciiIndexWithValForTranslation = dict((v, k) for k,v in self.replaceAsciiIndexWithValForTranslation.iteritems())
+            self.rev_replaceAsciiIndexWithValForTranslation = dict((v, k) for k,v in self.replaceAsciiIndexWithValForTranslation.items())
 
-            self.rev_replaceAsciiIndexWithValForTranslation_FOR_DIALOGUE_FILE = dict((pack('B',v), ord(k)) for k,v in self.replaceAsciiIndexWithValForTranslation.iteritems())
+            self.rev_replaceAsciiIndexWithValForTranslation_FOR_DIALOGUE_FILE = dict((pack('B',v), ord(k)) for k,v in self.replaceAsciiIndexWithValForTranslation.items())
 
             #
             # The sort-of reverse is ALSO needed. A dictionary from index of table (for png positioning) to corresponding ascii letter. Needs rev_replaceAsciiIndexWithValForTranslation to be applied to the value!!!
             # Only for png table indexes > 0x9A
-            self.rev_replacePngIndexWithCorrAsciiChar = dict((v ,  ((k - 0x1C)/2)+1)  for k,v in self.dictOfOffsetsToValuesForForeignLettersToWrite.iteritems())
-            for myIterKey, corrValue in self.rev_replacePngIndexWithCorrAsciiChar.iteritems():
-        #        print "key: %d value: %d" % (myIterKey, corrValue)
+            self.rev_replacePngIndexWithCorrAsciiChar = dict((v ,  ((k - 0x1C)//2)+1)  for k,v in self.dictOfOffsetsToValuesForForeignLettersToWrite.items())
+            for myIterKey, corrValue in self.rev_replacePngIndexWithCorrAsciiChar.items():
+        #        print("key: %d value: %d" % (myIterKey, corrValue))
                 self.rev_replacePngIndexWithCorrAsciiChar[myIterKey] = self.rev_replaceAsciiIndexWithValForTranslation[corrValue]
 
 
@@ -566,10 +567,10 @@ class grabberFromPNG:
         #
         # TODO: Inform of Error if not found!
         ## DEBUG
-        #print "Initializing DB..."
+        #print("Initializing DB...")
         if not os.access(self.DBFileNameAndRelPath, os.F_OK) :
             #debug
-            print "CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath)
+            print("CRITICAL ERROR: The database file %s could not be found!!" % (self.DBFileNameAndRelPath))
         else:
             # TODO: DB initialization (Should happen once, not every time!)
             conn = sqlite3.connect(self.DBFileNameAndRelPath)
@@ -588,7 +589,7 @@ class grabberFromPNG:
             #
             c.execute('''delete from langSettings''')
             # put at least the greek encoding and string in the table
-#            print self.targetLangOrderAndListOfForeignLettersStrUnicode
+#            print(self.targetLangOrderAndListOfForeignLettersStrUnicode)
             c.execute("""insert into langSettings(encoding, charString) values(?,?)""", (self.targetEncodingUnicode, self.targetLangOrderAndListOfForeignLettersStrUnicode))
             conn.commit()
             #
@@ -596,7 +597,7 @@ class grabberFromPNG:
             # clear the table first
             # Then insert the values in order
             ## debug
-            #print "MI:SE empty slots: %d, MI2:SE empty slots: %d," % (len(self.SOMISE_listOfEmptySlotsForLetters), len(self.MISE2_listOfEmptySlotsForLetters))
+            #print("MI:SE empty slots: %d, MI2:SE empty slots: %d," % (len(self.SOMISE_listOfEmptySlotsForLetters), len(self.MISE2_listOfEmptySlotsForLetters)))
             c.execute('''delete from emptySlotsInFontInfoForLetters''')
             for tmpL in range(0, len(self.SOMISE_listOfEmptySlotsForLetters)):
                 c.execute("""insert into emptySlotsInFontInfoForLetters(GameID, AuksonID, AddressDecimal) values(?,?,?)""", (self.SOMISE_GameID,tmpL,self.SOMISE_listOfEmptySlotsForLetters[tmpL]))
@@ -729,14 +730,14 @@ class grabberFromPNG:
             for y in range(0, imheight):
                 r1,g1,b1,a1 = loadedImag[x, y]
                 if a1 != 0:
-    #                print loadedImag[x, y]
+    #                print(loadedImag[x, y])
                     if prevColStartForLetter == 0:
                         prevColStartForLetter = x
                         prevRowStartForLetter = y
                         startCol = x
-    #                    print "Letter found"
-    #                    print "start col:%d" % startCol
-    # #                    print "hypothe row:%d" % y
+    #                    print("Letter found")
+    #                    print("start col:%d" % startCol)
+    # #                    print("hypothe row:%d" % y)
     #                    # ksekinwntas apo to prwto row ths eikonas (to do optimize), kanoume parse kata rows gia na broume to top shmeio tou grammatos (row)
      #                   for y2 in range(0, y+1):
                         tmpSum = y + self.minSpaceBetweenLettersInColumnTopToTop
@@ -750,13 +751,13 @@ class grabberFromPNG:
                             scanToCol = imwidth
                             if tmpSum < imwidth:
                                 scanToCol = tmpSum
-                            #print (startCol, scanToCol)
+                            #print((startCol, scanToCol))
                             for x2 in range(startCol, scanToCol):
-                                #print loadedImag[x2, y2]
+                                #print(loadedImag[x2, y2])
                                 r2,g2,b2,a2 = loadedImag[x2, y2]
                                 if a2 != 0 and startRow == 0:
                                     startRow = y2 + trimTopPixels
-    #                                print "start row: %d" % startRow
+    #                                print("start row: %d" % startRow)
                                     break
         if startCol > 0 and startRow > 0:
             tmpSum = startRow + self.minSpaceBetweenLettersInColumnTopToTop
@@ -774,7 +775,7 @@ class grabberFromPNG:
                         endRow = y
             if endRow > 0:
                 endRow = endRow - trimBottomPixels
-    #        print "end row:% d" %endRow
+    #        print("end row:% d" %endRow)
 
         if startCol > 0 and startRow > 0 and endRow > 0:
             tmpSum = startCol + self.minSpaceBetweenLettersInRowLeftToLeft
@@ -784,10 +785,10 @@ class grabberFromPNG:
             for x in range(startCol, scanToCol):
                 for y in range(startRow, endRow+1):
                     r1,g1,b1,a1 = loadedImag[x, y]
-                    #print  loadedImag[x, y]
+                    #print( loadedImag[x, y])
                     if a1 != 0:
                         endCol = x
-    #        print "end col:% d" %endCol
+    #        print("end col:% d" %endCol)
         if startCol > 0 and startRow > 0 and endRow > 0 and endCol > 0:
             # append deducted baseline
             self.listOfBaselines.append(endRow)
@@ -804,7 +805,7 @@ class grabberFromPNG:
 #
     def getExpectedFileNameForOutputPNG(self):
         strRet = ""
-        if self.imageOriginalPNG <> "":
+        if self.imageOriginalPNG != "":
             file, ext = os.path.splitext(self.imageOriginalPNG)
             strRet = file + "Expanded"+ext
         return strRet
@@ -813,7 +814,7 @@ class grabberFromPNG:
 #
     def getExpectedFileNameForOutputINFO(self):
         strRet = ""
-        if self.origFontFilename <> "":
+        if self.origFontFilename != "":
             origFontFilenameParts = str.rpartition(str(self.origFontFilename), '.')
             strRet= origFontFilenameParts[0] + "_1" + origFontFilenameParts[1] + origFontFilenameParts[2]
         return strRet
@@ -847,7 +848,7 @@ class grabberFromPNG:
             errorFound = True
             return pDetectedBaseline
         ##debug
-        #print getFirstOrigLetterBox_LeftCol, getFirstOrigLetterBox_TopRow, getFirstOrigLetterBox_RightCol, getFirstOrigLetterBox_BottRow
+        #print(getFirstOrigLetterBox_LeftCol, getFirstOrigLetterBox_TopRow, getFirstOrigLetterBox_RightCol, getFirstOrigLetterBox_BottRow)
         # open original png image to figure the baseline from the first character
         if os.access(self.imageOriginalPNG, os.F_OK) :
             try:
@@ -931,7 +932,7 @@ class grabberFromPNG:
         self.cleanup() # necessary after detection of baseline, because it fills up some of the  lists used in the following!
 
         self.origFontPropertiesTxt = self.getImagePropertiesInfo(True) # "%dx%dx%s" % (im.size[0],im.size[1], im.mode)
-#        print "WEEEE::: ", self.imageOriginalPNG, im.format, "%dx%d" % im.size, im.mode        print "BASELINE DETECTED:%d " % origGameFontSizeEqBaseLine
+#        print("WEEEE::: ", self.imageOriginalPNG, im.format, "%dx%d" % im.size, im.mode        print "BASELINE DETECTED:%d " % origGameFontSizeEqBaseLine)
 
         #
         # ANOIGMA THS EIKONAS ME TH GRAMMH TWN XARAKTHRWN PROS IMPORT
@@ -941,17 +942,17 @@ class grabberFromPNG:
                 im = Image.open(self.imageRowFilePNG)
             except:
                 errMsg = "No letters were found in input png!"
-                print errMsg
+                print(errMsg)
                 retVal = -2
                 errorFound = True
         else:
             errMsg = "No letters were found in input png!"
-            print errMsg
+            print(errMsg)
             retVal = -2
             errorFound = True
         if not errorFound:
             #debug
-            #print self.imageRowFilePNG, im.format, "%dx%d" % im.size, im.mode
+            #print(self.imageRowFilePNG, im.format, "%dx%d" % im.size, im.mode)
             w1, h1 = im.size
             trimTopPixels = 0
             trimBottomPixels = 0
@@ -967,14 +968,14 @@ class grabberFromPNG:
             if sFilenameOnlyImageRowFilePNG.startswith("itcrp_"):
                 trimTopPixels = 1
                 trimBottomPixels = 1
-                print "Will trim upper line by %d pixels and bottom line by %d pixels" % (trimTopPixels, trimBottomPixels)
+                print("Will trim upper line by %d pixels and bottom line by %d pixels" % (trimTopPixels, trimBottomPixels))
             pix = im.load()
             # pix argument is mutable (will be changed in the parseImage body)
             while self.parseImage(pix, w1, h1, trimTopPixels, trimBottomPixels) == 0:
                 self.lettersFound=  self.lettersFound+1
-        #    print self.listOfBaselines
+        #    print(self.listOfBaselines)
             #debug
-            #print "%d" % self.lettersFound
+            #print("%d" % self.lettersFound)
             if self.lettersFound > 0 :
 
                 #
@@ -1011,13 +1012,13 @@ class grabberFromPNG:
                             pixHeightToBeginAppend = tmpLastPixelRowOfOrigImage[0]      # this is actually the next line pixel after the end of the previous line (but the font file indexes pixels with a +1 as it starts from 1,1 not 0,0)
                         else:
                             pixHeightToBeginAppend = 0
-                #        print origGameFontDiakenoHeight, pixHeightToBeginAppend
+                #        print(origGameFontDiakenoHeight, pixHeightToBeginAppend)
                         #
                         # FOR ITALICS MODE, GET SOME FEATURES OF SPECIFIC LETTERS
                         #
                         specificLetterPrototypes = ('y', 'i', 'u', 'B', 'O', 'I', 'T', 'o', 't', 'p','q','g', 'v','c')
                         specificLetterPrototypesToFeaturesDict = dict((k, (0,0,0)) for k in specificLetterPrototypes)
-                        print specificLetterPrototypesToFeaturesDict
+                        print(specificLetterPrototypesToFeaturesDict)
 
                         for idxe in range(0,len(specificLetterPrototypes)):
                             orderInPNG = self.bringPngIndexForOrigChar[ specificLetterPrototypes[idxe] ]  # works only for original letters
@@ -1035,7 +1036,7 @@ class grabberFromPNG:
                             jOrigKern = tmpKerningLetter[0]
                             tmpMyList = (jOrigIndent, jOrigWidth, jOrigKern)
                             specificLetterPrototypesToFeaturesDict.update({ specificLetterPrototypes[idxe]: tmpMyList});
-                        print specificLetterPrototypesToFeaturesDict
+                        print(specificLetterPrototypesToFeaturesDict)
 
 
                         origFontFile.close()
@@ -1057,7 +1058,7 @@ class grabberFromPNG:
                             minRowTop = max(self.listOfBaselines)
                             for (c_startCol, c_startRow, c_endCol, c_endRow) in self.listOfLetterBoxes[0:]:
                                 tmpWidthMeasurement += (c_endCol-c_startCol + 1) + interLetterSpacingInPNG
-            ##                    print "tmpWidthMeasurement: %d " % (tmpWidthMeasurement)
+            ##                    print("tmpWidthMeasurement: %d " % (tmpWidthMeasurement))
                                 if tmpWidthMeasurement >= imOrigGameFont.size[0]:
                                     extra_neededRows += 1
                                     tmpWidthMeasurement = interLetterSpacingInPNG + (c_endCol-c_startCol + 1) + interLetterSpacingInPNG #begin with the current letter
@@ -1072,7 +1073,7 @@ class grabberFromPNG:
                                         tmpListOfDistinctBaselines.append(i)
                                 except:
                                     pass
-                    #        print tmpListOfDistinctBaselines
+                    #        print(tmpListOfDistinctBaselines)
                             popularBaselineCount = 0
                             popularBaseline = 0
                             for i in tmpListOfDistinctBaselines[0:]:
@@ -1080,7 +1081,7 @@ class grabberFromPNG:
                                     popularBaselineCount = self.listOfBaselines.count(i)
                                     popularBaseline = i
                             #debug
-                            #print "Baseline Index Popular: %d by count: %d" % (popularBaseline,popularBaselineCount)
+                            #print("Baseline Index Popular: %d by count: %d" % (popularBaseline,popularBaselineCount))
                             customPopularBaseline = popularBaseline + customBaselineOffs ##new
             #                normalizedPopularBaseLine = popularBaseline - minRowTop ##old
                             normalizedPopularBaseLine = customPopularBaseline - minRowTop ##new
@@ -1099,12 +1100,12 @@ class grabberFromPNG:
 
                                 freeLinesInOriginalFile = int((norm_OrigGameFontHeight - pixHeightToBeginAppend) / origGameFontDiakenoHeight)  ## old
                                 if freeLinesInOriginalFile < 0 :
-                                    print "freeLinesInOriginalFile before zeroing: %d" % freeLinesInOriginalFile
+                                    print("freeLinesInOriginalFile before zeroing: %d" % freeLinesInOriginalFile)
                                     extra_neededRows += (-1)* freeLinesInOriginalFile # for case of the missing letters in Mi2:SE () TODO: if the problem is only this file, we could specifically set the filename in the condition to increase the extra_needed_rows.
                                     freeLinesInOriginalFile = 0 # was here before
                                 #debug
-                                print "freeLinesInOriginalFile: %d" % freeLinesInOriginalFile
-                                print "extra_neededRows: %d" % extra_neededRows
+                                print("freeLinesInOriginalFile: %d" % freeLinesInOriginalFile)
+                                print("extra_neededRows: %d" % extra_neededRows)
                                 if freeLinesInOriginalFile <= extra_neededRows:
                                     extra_neededRows = extra_neededRows - freeLinesInOriginalFile
                                     newHeight = norm_OrigGameFontHeight + (extra_neededRows * origGameFontDiakenoHeight) ## old
@@ -1180,7 +1181,7 @@ class grabberFromPNG:
                                     if not errorFound:
 
                                         curHeightForNextAppend = pixHeightToBeginAppend
-                                        print "Len list of letterboxes! %d" % (len(self.listOfLetterBoxes), )
+                                        print("Len list of letterboxes! %d" % (len(self.listOfLetterBoxes), ))
                                         for (c_startCol, c_startRow, c_endCol, c_endRow) in self.listOfLetterBoxes[0:]:
                                             currLetterFinishCol  = previousLetterFinishCol + interLetterSpacingInPNG + (c_endCol-c_startCol) + 1
                                             if currLetterFinishCol >= imOrigGameFont.size[0]:
@@ -1277,12 +1278,12 @@ class grabberFromPNG:
                                                     currPngIndex = 2 + importedNumOfLetters - existingSizeOfTableInOrigImage -1
                                                     foreignItalicFontCharacter = True
                                                 if foreignItalicFontCharacter == True:
-                                                    ##print "Current letter index is %d, %d, %d"  % (currPngIndex, importedNumOfLetters, existingSizeOfTableInOrigImage)
+                                                    ##print("Current letter index is %d, %d, %d"  % (currPngIndex, importedNumOfLetters, existingSizeOfTableInOrigImage))
                                                     if(currPngIndex >= len(self.orderAndListOfForeignLetters)):
-                                                        print "WARNING: Out of range letter index is %d"  % (currPngIndex)
+                                                        print("WARNING: Out of range letter index is %d"  % (currPngIndex))
                                                     else:
                                                         currLett = self.orderAndListOfForeignLetters[currPngIndex];
-                                                        print "Current letter is %s"  % (currLett)
+                                                        print("Current letter is %s"  % (currLett))
                                                         if (currPngIndex == self.pngIndexOfForeignLetter(u"β") or \
                                                             currPngIndex == self.pngIndexOfForeignLetter(u"γ") or \
                                                             currPngIndex == self.pngIndexOfForeignLetter(u"ζ") or \
@@ -1399,7 +1400,7 @@ class grabberFromPNG:
 
                                             previousLetterFinishCol = previousLetterFinishCol+interLetterSpacingInPNG + (c_endCol-c_startCol) + 1
 
-                        ##                    print importedNumOfLetters, c_startCol,c_startRow, c_endCol, c_endRow
+                        ##                    print(importedNumOfLetters, c_startCol,c_startRow, c_endCol, c_endRow)
                                         totalFontLetters = 0
                                         if (self.reconstructEntireFont == False):
                                            totalFontLetters = existingSizeOfTableInOrigImage + importedNumOfLetters
@@ -1408,19 +1409,19 @@ class grabberFromPNG:
 
                                         # update the size of the table in the .font file 4rth byte:
                                         copyFontFile.seek(4)
-                                        print "totalFontLetters %d" % (totalFontLetters)
+                                        print("totalFontLetters %d" % (totalFontLetters))
                                         if (totalFontLetters < 0):
                                             errMsg = 'An error occurred while detecting the number of font letters!'
                                             retVal = -1
-                                            print errMsg
+                                            print(errMsg)
                                         elif (totalFontLetters == 0):
                                             errMsg = 'No font letters were detected! Please adjust the fields for top-top and left-left margins!'
                                             retVal = -1
-                                            print errMsg
+                                            print(errMsg)
                                         elif (totalFontLetters > 255):
                                             errMsg = 'Too many font letters were detected (%d)! Please adjust the fields for top-top and left-left margins!'%(totalFontLetters,)
                                             retVal = -1
-                                            print errMsg
+                                            print(errMsg)
                                         else:
                                             totalFontLettersByteToWrite = pack('B',totalFontLetters)
                                             copyFontFile.write(totalFontLettersByteToWrite)
@@ -1428,7 +1429,7 @@ class grabberFromPNG:
                                             # update the ASCII table indexes to the PNG table entries:
                                             for tmpX in self.dictOfOffsetsToValuesForForeignLettersToWrite.keys():
                                                 copyFontFile.seek(tmpX)
-                            ##                    print self.dictOfOffsetsToValuesForForeignLettersToWrite[tmpX]
+                            ##                    print(self.dictOfOffsetsToValuesForForeignLettersToWrite[tmpX])
                                                 tmpByteToWrite = pack('B',self.dictOfOffsetsToValuesForForeignLettersToWrite[tmpX])
                                                 copyFontFile.write(tmpByteToWrite)
 
@@ -1444,16 +1445,16 @@ class grabberFromPNG:
                                             copyFontFile.close()
                                             retVal = 0
                                             errMsg = "Process completed successfully!"
-                                            print errMsg
-                    else: ## if existingSizeOfTableInOrigImage <> lettersInOriginalFontFile
+                                            print(errMsg)
+                    else: ## if existingSizeOfTableInOrigImage != lettersInOriginalFontFile
         #                copyFontFile.close()
                         errMsg = "Font file %s already has appended letters or is incompatible with the selected game. Quiting...." % self.copyFontFileName
-                        print errMsg
+                        print(errMsg)
                         retVal = -1
 
             else: ## if self.lettersFound <= 0
                 errMsg = "No letters were found in input png!"
-                print errMsg
+                print(errMsg)
                 retVal = -2
         return (retVal, errMsg, origGameFontSizeEqBaseLine, totalFontLetters, importedNumOfLetters)
 
@@ -1470,7 +1471,7 @@ class grabberFromPNG:
             kerningLetterInt = jOrigKern + 2
         else:
             kerningLetterInt = widthTargetLangInt - ((widthTargetLangInt * (jOrigWidth-jOrigKern)) / jOrigWidth)
-        print "Adopting Indent and Kerning of: %s. Orig Indent=%d Width=%d Kern=%d. Target language Indent=%d Width=%d Kern=%d. " % (letterPrototype, jOrigIndent, jOrigWidth, jOrigKern, pixelsWithinLetterBoxFromLeftToLetterInt, widthTargetLangInt, kerningLetterInt )
+        print("Adopting Indent and Kerning of: %s. Orig Indent=%d Width=%d Kern=%d. Target language Indent=%d Width=%d Kern=%d. " % (letterPrototype, jOrigIndent, jOrigWidth, jOrigKern, pixelsWithinLetterBoxFromLeftToLetterInt, widthTargetLangInt, kerningLetterInt ))
         return (pixelsWithinLetterBoxFromLeftToLetterInt, kerningLetterInt)
 
 
@@ -1512,7 +1513,7 @@ class grabberFromPNG:
             tmpSizeOfTableWithFontsIndexedToImage = unpack('B',activeFontFile.read(1))
             existingSizeOfTableInActiveImage =  tmpSizeOfTableWithFontsIndexedToImage[0]
             for i in range(0,existingSizeOfTableInActiveImage):
-#                print i, existingSizeOfTableInActiveImage, boolOrigFile
+#                print(i, existingSizeOfTableInActiveImage, boolOrigFile)
                 if((firstTableLineOffset + i* 0x10 ) < activeFontFileSize):
                     activeFontFile.seek(firstTableLineOffset + i* 0x10)
                     tmpColStart = unpack('h',activeFontFile.read(2))    # unpack always returns a tuple
@@ -1526,7 +1527,7 @@ class grabberFromPNG:
                     if(i >= 0x0 and i <= (self.lettersInOriginalFontFile - 1) ):
                         tmpChar = self.replacePngIndexForOrigChars[i]
                     if(i >= self.lettersInOriginalFontFile and i < self.lettersInOriginalFontFile + len(self.orderAndListOfForeignLetters) ):
-                        ##print "key %d" % (i, )
+                        ##print("key %d" % (i, ))
                         tmpChar = self.rev_replacePngIndexWithCorrAsciiChar[i]
                     retList.append((tmpColStart[0], tmpRowStart[0], tmpColEnd[0], tmpRowEnd[0], tmpPixelsWithinLetterBoxFromLeftToLetter[0], tmpWidthLetter[0], tmpKerningLetter[0], tmpChar))
                 else:
@@ -1585,9 +1586,9 @@ if __name__ == "__main__":
 #        myGrabInstance.setBaseLineOffset(TMPcustomBaseLineOffset)
         myGrabInstance.generateModFiles(TMPcustomBaseLineOffset)
     else:
-        print "Invalid syntax! ..."
+        print("Invalid syntax! ...")
         myGrabInstance = grabberFromPNG('windows-extra', 1)
 else:
     #debug
-	#print 'font grabber imported from another module'
+	#print('font grabber imported from another module')
     pass

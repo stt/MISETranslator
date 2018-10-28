@@ -1,36 +1,37 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from Qt import QtCore, QtGui
+from Qt.QtWidgets import QMessageBox
+from Qt.QtCore import *
+from Qt.QtGui import *
 #
 # MESSAGEBOX FUNCTIONS
 #
-def qMsgBoxQuestion(parentWidg, titleMsgBx, messageMsgBx, buttonFlagsMsgBxm = QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, defaultBtnMsgBx = QtGui.QMessageBox.No):
+def qMsgBoxQuestion(parentWidg, titleMsgBx, messageMsgBx, buttonFlagsMsgBxm = QMessageBox.Yes | QMessageBox.No, defaultBtnMsgBx = QMessageBox.No):
     qmsgParent = None
     if(parentWidg is not None):
         qmsgParent = parentWidg
     reply = defaultBtnMsgBx
     try:
-        reply = QtGui.QMessageBox.question(qmsgParent, titleMsgBx, messageMsgBx, buttonFlagsMsgBxm, defaultBtnMsgBx)
+        reply = QMessageBox.question(qmsgParent, titleMsgBx, messageMsgBx, buttonFlagsMsgBxm, defaultBtnMsgBx)
     except:
         parentScreen = QtGui.QApplication.desktop().screen(QtGui.QApplication.desktop().primaryScreen())
         qmsgParent = QtGui.QMainWindow(parentScreen)
-        reply = QtGui.QMessageBox.question(qmsgParent, titleMsgBx, messageMsgBx, buttonFlagsMsgBxm, defaultBtnMsgBx)
+        reply = QMessageBox.question(qmsgParent, titleMsgBx, messageMsgBx, buttonFlagsMsgBxm, defaultBtnMsgBx)
     return reply
 
-def qMsgBoxCritical(parentWidg, titleMsgBx, messageMsgBx, buttonFlagsMsgBxm = QtGui.QMessageBox.Ok | QtGui.QMessageBox.Default, defaultBtnMsgBx = QtGui.QMessageBox.NoButton ):
+def qMsgBoxCritical(parentWidg, titleMsgBx, messageMsgBx, buttonFlagsMsgBxm = QMessageBox.Ok | QMessageBox.Default, defaultBtnMsgBx = QMessageBox.NoButton ):
     qmsgParent = None
     if(parentWidg is not None):
         qmsgParent = parentWidg
     reply = defaultBtnMsgBx
     try:
-        reply = QtGui.QMessageBox.critical(qmsgParent, titleMsgBx, messageMsgBx, buttonFlagsMsgBxm, defaultBtnMsgBx)
+        reply = QMessageBox.critical(qmsgParent, titleMsgBx, messageMsgBx, buttonFlagsMsgBxm, defaultBtnMsgBx)
     except:
         parentScreen = QtGui.QApplication.desktop().screen(QtGui.QApplication.desktop().primaryScreen())
         qmsgParent = QtGui.QMainWindow(parentScreen)
-        reply = QtGui.QMessageBox.critical(qmsgParent, titleMsgBx, messageMsgBx, buttonFlagsMsgBxm, defaultBtnMsgBx)
+        reply = QMessageBox.critical(qmsgParent, titleMsgBx, messageMsgBx, buttonFlagsMsgBxm, defaultBtnMsgBx)
     return reply
 
 
@@ -38,39 +39,39 @@ def qMsgBoxInformation(parentWidg, titleMsgBx, messageMsgBx):
     qmsgParent = None
     if(parentWidg is not None):
         qmsgParent = parentWidg
-    reply = QtGui.QMessageBox.Ok
+    reply = QMessageBox.Ok
     try:
-        reply = QtGui.QMessageBox.information(qmsgParent, titleMsgBx, messageMsgBx)
+        reply = QMessageBox.information(qmsgParent, titleMsgBx, messageMsgBx)
     except:
         parentScreen = QtGui.QApplication.desktop().screen(QtGui.QApplication.desktop().primaryScreen())
         qmsgParent = QtGui.QMainWindow(parentScreen)
-        reply = QtGui.QMessageBox.information(qmsgParent, titleMsgBx, messageMsgBx)
+        reply = QMessageBox.information(qmsgParent, titleMsgBx, messageMsgBx)
     return reply
 
 def qMsgBoxAbout(parentWidg, titleMsgBx, messageMsgBx):
     qmsgParent = None
     if(parentWidg is not None):
         qmsgParent = parentWidg
-    reply = QtGui.QMessageBox.Ok
+    reply = QMessageBox.Ok
     try:
-        reply = QtGui.QMessageBox.about(qmsgParent, titleMsgBx, messageMsgBx)
+        reply = QMessageBox.about(qmsgParent, titleMsgBx, messageMsgBx)
     except:
         parentScreen = QtGui.QApplication.desktop().screen(QtGui.QApplication.desktop().primaryScreen())
         qmsgParent = QtGui.QMainWindow(parentScreen)
-        reply = QtGui.QMessageBox.about(qmsgParent, titleMsgBx, messageMsgBx)
+        reply = QMessageBox.about(qmsgParent, titleMsgBx, messageMsgBx)
     return reply
 
 def qMsgBoxWarning(parentWidg, titleMsgBx, messageMsgBx):
     qmsgParent = None
     if(parentWidg is not None):
         qmsgParent = parentWidg
-    reply = QtGui.QMessageBox.Ok
+    reply = QMessageBox.Ok
     try:
-        reply = QtGui.QMessageBox.warning(qmsgParent, titleMsgBx, messageMsgBx)
+        reply = QMessageBox.warning(qmsgParent, titleMsgBx, messageMsgBx)
     except:
         parentScreen = QtGui.QApplication.desktop().screen(QtGui.QApplication.desktop().primaryScreen())
         qmsgParent = QtGui.QMainWindow(parentScreen)
-        reply = QtGui.QMessageBox.warning(qmsgParent, titleMsgBx, messageMsgBx)
+        reply = QMessageBox.warning(qmsgParent, titleMsgBx, messageMsgBx)
     return reply
 
 
